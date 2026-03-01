@@ -386,3 +386,71 @@ observer:
 ```
 
 Every tool call is logged as `tool_dry_run` and blocked. Review the audit trail to understand agent behavior before granting real access.
+
+## Channel identity bridge
+
+When OpenClaw routes messages from WhatsApp, Discord, Slack, or Telegram, the session key carries the channel user identity (e.g. `agent:<id>:whatsapp:dm:+15550123`). The `@grwnd/openclaw-governance` plugin parses that key, looks up the user in a YAML mapping file, and sets the `GRWND_USER`, `GRWND_ROLE`, and `GRWND_ORG_UNIT` environment variables before pi-governance reads them.
+
+```
+OpenClaw session_start
+  → @grwnd/openclaw-governance plugin
+    → parse sessionKey "agent:<id>:whatsapp:dm:+15550123"
+    → lookup "whatsapp:+15550123" in openclaw-users.yaml
+    → write process.env.GRWND_USER, GRWND_ROLE, GRWND_ORG_UNIT
+  → @grwnd/pi-governance Pi extension
+    → EnvIdentityProvider reads the env vars
+    → governance enforced with correct role
+```
+
+### Install the plugin
+
+```bash
+openclaw plugins install @grwnd/openclaw-governance
+```
+
+### Create a users mapping file
+
+Create `openclaw-users.yaml` alongside your OpenClaw config:
+
+```yaml
+users:
+  whatsapp:+15550123:
+    role: report_author
+    org_unit: field-ops
+  discord:428374928374:
+    role: analyst
+  slack:U04ABCD1234:
+    role: project_lead
+    org_unit: engineering
+
+default:
+  role: analyst
+  org_unit: default
+```
+
+Keys are `<channel>:<peerId>` — the channel name and the platform-specific user identifier. Each entry maps to a governance role and optional org unit.
+
+The `default` block is a fallback for any user not explicitly listed. Remove it to deny access to unknown users.
+
+### Configure the plugin
+
+In your OpenClaw config, point to the users file:
+
+```json
+{
+  "plugins": {
+    "grwnd-openclaw-governance": {
+      "users_file": "./openclaw-users.yaml"
+    }
+  }
+}
+```
+
+### Supported session key formats
+
+| Format | Example                                              |
+| ------ | ---------------------------------------------------- |
+| DM     | `agent:<agentId>:<channel>:dm:<peerId>`              |
+| Group  | `agent:<agentId>:<channel>:group:<groupId>:<peerId>` |
+
+The plugin ignores keys it cannot parse (e.g. `agent:<id>:main` for direct operator access), leaving the env vars unset so pi-governance falls through to its next identity provider.

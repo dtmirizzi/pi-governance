@@ -1,0 +1,11 @@
+users:
+  whatsapp:+15550123:
+    role: report_author
+    org_unit: field-ops
+  discord:428374928374:
+    role: admin
+    org_unit: platform
+
+default:
+  role: analyst
+  org_unit: default

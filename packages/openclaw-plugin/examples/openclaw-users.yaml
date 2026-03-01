@@ -1,0 +1,44 @@
+# openclaw-users.yaml — Map OpenClaw channel identities to governance roles
+#
+# Keys are "<channel>:<peerId>" where:
+#   - channel: whatsapp, discord, slack, telegram, etc.
+#   - peerId:  the channel-specific user identifier
+#
+# Each entry maps to a governance role and optional org_unit.
+# These values are written to GRWND_USER, GRWND_ROLE, and GRWND_ORG_UNIT
+# environment variables before pi-governance reads them.
+
+users:
+  # WhatsApp users — peerId is the phone number
+  whatsapp:+15550123:
+    role: report_author
+    org_unit: field-ops
+
+  whatsapp:+15550456:
+    role: admin
+    org_unit: platform
+
+  # Discord users — peerId is the Discord user ID
+  discord:428374928374:
+    role: analyst
+    org_unit: research
+
+  discord:918273645182:
+    role: project_lead
+    org_unit: engineering
+
+  # Slack users — peerId is the Slack member ID
+  slack:U04ABCD1234:
+    role: report_author
+    org_unit: marketing
+
+  # Telegram users — peerId is the Telegram user ID
+  telegram:123456789:
+    role: analyst
+    org_unit: data-science
+
+# Fallback for any channel user not listed above.
+# Remove this block to deny access to unknown users entirely.
+default:
+  role: analyst
+  org_unit: default

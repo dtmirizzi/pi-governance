@@ -1,0 +1,7 @@
+{
+  "id": "grwnd-openclaw-governance",
+  "name": "Grwnd OpenClaw Governance",
+  "version": "0.1.0",
+  "description": "Bridges OpenClaw channel identity to pi-governance RBAC roles",
+  "extensions": ["./dist/index.js"]
+}

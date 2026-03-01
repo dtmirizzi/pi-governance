@@ -38,7 +38,7 @@ jobs:
         run: pnpm format:check
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm -r typecheck
 
       - name: Test
         run: pnpm test
@@ -48,10 +48,13 @@ jobs:
         run: pnpm test:coverage
 
       - name: Build
-        run: pnpm build
+        run: pnpm -r build
 
       - name: Verify dist output
         run: |
-          test -f dist/index.js || (echo "Missing ESM output" && exit 1)
-          test -f dist/index.cjs || (echo "Missing CJS output" && exit 1)
-          test -f dist/index.d.ts || (echo "Missing type declarations" && exit 1)
+          test -f dist/index.js || (echo "Missing root ESM output" && exit 1)
+          test -f dist/index.cjs || (echo "Missing root CJS output" && exit 1)
+          test -f dist/index.d.ts || (echo "Missing root type declarations" && exit 1)
+          test -f packages/openclaw-plugin/dist/index.js || (echo "Missing openclaw-plugin ESM output" && exit 1)
+          test -f packages/openclaw-plugin/dist/index.cjs || (echo "Missing openclaw-plugin CJS output" && exit 1)
+          test -f packages/openclaw-plugin/dist/index.d.ts || (echo "Missing openclaw-plugin type declarations" && exit 1)
