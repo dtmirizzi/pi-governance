@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/Grwnd-AI/pi-governance/compare/v1.4.0...v1.4.1) (2026-03-01)
+
+### Bug Fixes
+
+- add publishConfig access public for scoped package ([c62ec09](https://github.com/Grwnd-AI/pi-governance/commit/c62ec097e6c97c2c7a9edd9111577ce81a031771))
+
 # [1.4.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.3.0...v1.4.0) (2026-03-01)
 
 ### Bug Fixes
