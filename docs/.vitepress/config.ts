@@ -5,7 +5,14 @@ export default defineConfig({
   description: 'Governance, RBAC, audit, and HITL for Pi-based coding agents',
   base: '/pi-governance/',
 
-  head: [['link', { rel: 'icon', href: '/pi-governance/logo.png' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/pi-governance/logo.png' }],
+    ['meta', { property: 'og:image', content: '/pi-governance/social-card.png' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: '/pi-governance/social-card.png' }],
+  ],
 
   themeConfig: {
     logo: '/logo.png',
