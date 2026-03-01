@@ -54,6 +54,33 @@ audit:
     - type: postgres
       connection: ${AUDIT_DB_URL}
 
+dlp: # Data Loss Prevention (optional)
+  enabled: false # Off by default
+  mode: audit # Global: audit | mask | block
+  on_input: block # Override for inputs
+  on_output: mask # Override for outputs
+  masking:
+    strategy: partial # partial | full | hash
+    show_chars: 4
+    placeholder: '***'
+  severity_threshold: low # low | medium | high | critical
+  built_in:
+    secrets: true
+    pii: true
+  custom_patterns:
+    - name: internal_key
+      pattern: 'grwnd_[a-zA-Z0-9]{32}'
+      severity: critical
+      action: block # Per-pattern override
+  allowlist:
+    - pattern: 'EXAMPLE_KEY_.*'
+    - pattern: '127\.0\.0\.1'
+  role_overrides:
+    admin:
+      enabled: false # Admin skips DLP
+    analyst:
+      mode: block # Strict for analysts
+
 org_units: # Per-org-unit overrides (optional)
   compliance:
     hitl:
@@ -108,6 +135,28 @@ org_units: # Per-org-unit overrides (optional)
 | `sinks[].path`       | `string` | `~/.pi/agent/audit.jsonl`    | File path (jsonl only)            |
 | `sinks[].url`        | `string` | —                            | Endpoint (webhook only)           |
 | `sinks[].connection` | `string` | —                            | DSN (postgres only)               |
+
+### dlp
+
+| Field                        | Type      | Default   | Description                        |
+| ---------------------------- | --------- | --------- | ---------------------------------- |
+| `enabled`                    | `boolean` | `false`   | Enable DLP scanning                |
+| `mode`                       | `string`  | `audit`   | `audit`, `mask`, or `block`        |
+| `on_input`                   | `string`  | —         | Override action for tool inputs    |
+| `on_output`                  | `string`  | —         | Override action for tool outputs   |
+| `masking.strategy`           | `string`  | `partial` | `partial`, `full`, or `hash`       |
+| `masking.show_chars`         | `number`  | `4`       | Chars to show (partial only)       |
+| `masking.placeholder`        | `string`  | `***`     | Replacement text                   |
+| `severity_threshold`         | `string`  | `low`     | Minimum severity to act on         |
+| `built_in.secrets`           | `boolean` | `true`    | Enable built-in secret patterns    |
+| `built_in.pii`               | `boolean` | `true`    | Enable built-in PII patterns       |
+| `custom_patterns`            | `array`   | `[]`      | Additional regex patterns          |
+| `custom_patterns[].name`     | `string`  | —         | Pattern identifier                 |
+| `custom_patterns[].pattern`  | `string`  | —         | Regex pattern string               |
+| `custom_patterns[].severity` | `string`  | —         | `low`/`medium`/`high`/`critical`   |
+| `custom_patterns[].action`   | `string`  | —         | Per-pattern action override        |
+| `allowlist`                  | `array`   | `[]`      | Patterns to exclude from detection |
+| `role_overrides`             | `object`  | —         | Per-role DLP config overrides      |
 
 ## Environment variable substitution
 

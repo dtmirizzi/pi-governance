@@ -11,7 +11,10 @@ export type AuditEventType =
   | 'approval_granted'
   | 'approval_denied'
   | 'budget_exceeded'
-  | 'config_reloaded';
+  | 'config_reloaded'
+  | 'dlp_blocked'
+  | 'dlp_detected'
+  | 'dlp_masked';
 
 export interface AuditRecord {
   id: string;

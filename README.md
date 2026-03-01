@@ -25,6 +25,7 @@
 - **Role-based access control** — define who can use which tools
 - **Bash command classification** — auto-block dangerous commands (`rm -rf`, `sudo`, `curl | sh`)
 - **Path-level file gating** — restrict read/write to scoped directories
+- **Data loss prevention** — detect and block/mask API keys, tokens, and PII before they reach the LLM
 - **Human-in-the-loop approval** — require sign-off for sensitive operations
 - **Audit logging** — structured JSONL logs of every governance decision
 - **Prompt-level policy** — role-scoped system prompt templates
@@ -44,6 +45,7 @@ That's it. On next session start, governance is active with sensible defaults:
 - All tools allowed
 - Dangerous bash commands blocked
 - Supervised mode (approval required for writes and bash)
+- DLP disabled (opt-in)
 - Audit logged to `~/.pi/agent/audit.jsonl`
 
 ### Configure
@@ -154,6 +156,7 @@ User message → Pi Agent Runtime
               ┌─────┴──────────┐
               │ onBeforeToolCall │  ← RBAC: tool allowed?
               │  → classify bash │  ← Path check
+              │  → DLP scan      │  ← Block/mask secrets & PII
               │  → HITL approval │  ← Audit log
               └─────┬──────────┘
                     │
@@ -161,9 +164,41 @@ User message → Pi Agent Runtime
                     │    └→ Return denial message
                     │
               ┌─────┴──────────┐
-              │ onAfterToolCall  │  ← Audit result
+              │ onAfterToolCall  │  ← DLP scan output
+              │                  │  ← Audit result
               └────────────────┘
 ```
+
+## Data Loss Prevention
+
+DLP prevents secrets and PII from leaking through tool calls to LLM providers. It scans both inputs (before execution) and outputs (before reaching the LLM).
+
+```yaml
+dlp:
+  enabled: true
+  mode: mask # audit | mask | block
+  on_input: block # block tool calls with secrets
+  on_output: mask # redact secrets in tool output
+  masking:
+    strategy: partial # partial | full | hash
+    show_chars: 4
+  severity_threshold: low
+  built_in:
+    secrets: true # AWS keys, GitHub PATs, JWTs, Stripe keys, ...
+    pii: true # SSN, credit cards, email, phone, IP
+  custom_patterns:
+    - name: internal_key
+      pattern: 'grwnd_[a-zA-Z0-9]{32}'
+      severity: critical
+      action: block
+  allowlist:
+    - pattern: '127\.0\.0\.1'
+  role_overrides:
+    admin:
+      enabled: false # admin skips DLP
+```
+
+DLP is **disabled by default** — zero behavioral change for existing users. See the full [DLP guide](https://grwnd-ai.github.io/pi-governance/guide/dlp) and [pattern reference](https://grwnd-ai.github.io/pi-governance/reference/dlp-patterns).
 
 ## Dual Policy Engine
 
@@ -262,6 +297,7 @@ Full documentation at **[grwnd-ai.github.io/pi-governance](https://grwnd-ai.gith
 - [OpenClaw Integration](https://grwnd-ai.github.io/pi-governance/guide/openclaw)
 - [YAML Policies](https://grwnd-ai.github.io/pi-governance/guide/yaml-policies)
 - [Bash Classifier](https://grwnd-ai.github.io/pi-governance/guide/bash-classifier)
+- [Data Loss Prevention](https://grwnd-ai.github.io/pi-governance/guide/dlp)
 - [Configuration Reference](https://grwnd-ai.github.io/pi-governance/reference/config)
 
 ## License

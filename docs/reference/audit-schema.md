@@ -99,6 +99,40 @@ Logged when the governance config file is successfully hot-reloaded during a ses
 | -------------- | -------- | ---------------- |
 | `source`       | `string` | Config file path |
 
+### dlp_blocked
+
+Logged when a tool call is blocked because sensitive data was detected in the input.
+
+| Metadata field | Type       | Description                   |
+| -------------- | ---------- | ----------------------------- |
+| `patterns`     | `string[]` | Names of matched DLP patterns |
+| `severities`   | `string[]` | Severity levels of matches    |
+| `direction`    | `string`   | `input`                       |
+| `count`        | `number`   | Total number of matches       |
+
+### dlp_detected
+
+Logged when sensitive data is found but allowed through (audit-only mode).
+
+| Metadata field | Type       | Description                   |
+| -------------- | ---------- | ----------------------------- |
+| `patterns`     | `string[]` | Names of matched DLP patterns |
+| `severities`   | `string[]` | Severity levels of matches    |
+| `direction`    | `string`   | `input` or `output`           |
+| `count`        | `number`   | Total number of matches       |
+
+### dlp_masked
+
+Logged when sensitive data is redacted in tool input or output.
+
+| Metadata field | Type       | Description                                     |
+| -------------- | ---------- | ----------------------------------------------- |
+| `patterns`     | `string[]` | Names of matched DLP patterns                   |
+| `severities`   | `string[]` | Severity levels of matches                      |
+| `direction`    | `string`   | `input` or `output`                             |
+| `count`        | `number`   | Total number of matches                         |
+| `strategy`     | `string`   | Masking strategy used (`partial`/`full`/`hash`) |
+
 ## Example records
 
 ### tool_allowed

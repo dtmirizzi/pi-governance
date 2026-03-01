@@ -88,12 +88,87 @@ const OrgUnitOverride = Type.Object({
   ),
 });
 
+// --- DLP (Data Loss Prevention) ---
+
+const DlpMaskingConfig = Type.Object({
+  strategy: Type.Union([Type.Literal('partial'), Type.Literal('full'), Type.Literal('hash')], {
+    default: 'partial',
+  }),
+  show_chars: Type.Optional(Type.Number({ default: 4, minimum: 0 })),
+  placeholder: Type.Optional(Type.String({ default: '***' })),
+});
+
+const DlpCustomPatternConfig = Type.Object({
+  name: Type.String(),
+  pattern: Type.String(),
+  severity: Type.Union([
+    Type.Literal('low'),
+    Type.Literal('medium'),
+    Type.Literal('high'),
+    Type.Literal('critical'),
+  ]),
+  action: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+});
+
+const DlpAllowlistEntryConfig = Type.Object({
+  pattern: Type.String(),
+});
+
+const DlpRoleOverrideConfig = Type.Object({
+  enabled: Type.Optional(Type.Boolean()),
+  mode: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+  on_input: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+  on_output: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+});
+
+const DlpConfig = Type.Object({
+  enabled: Type.Boolean({ default: false }),
+  mode: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')], {
+      default: 'audit',
+    }),
+  ),
+  on_input: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+  on_output: Type.Optional(
+    Type.Union([Type.Literal('audit'), Type.Literal('mask'), Type.Literal('block')]),
+  ),
+  masking: Type.Optional(DlpMaskingConfig),
+  severity_threshold: Type.Optional(
+    Type.Union(
+      [Type.Literal('low'), Type.Literal('medium'), Type.Literal('high'), Type.Literal('critical')],
+      { default: 'low' },
+    ),
+  ),
+  built_in: Type.Optional(
+    Type.Object({
+      secrets: Type.Boolean({ default: true }),
+      pii: Type.Boolean({ default: true }),
+    }),
+  ),
+  custom_patterns: Type.Optional(Type.Array(DlpCustomPatternConfig)),
+  allowlist: Type.Optional(Type.Array(DlpAllowlistEntryConfig)),
+  role_overrides: Type.Optional(Type.Record(Type.String(), DlpRoleOverrideConfig)),
+});
+
+export type DlpConfigType = Static<typeof DlpConfig>;
+
 export const GovernanceConfigSchema = Type.Object({
   auth: Type.Optional(AuthConfig),
   policy: Type.Optional(PolicyConfig),
   templates: Type.Optional(TemplatesConfig),
   hitl: Type.Optional(HitlConfig),
   audit: Type.Optional(AuditConfig),
+  dlp: Type.Optional(DlpConfig),
   org_units: Type.Optional(Type.Record(Type.String(), OrgUnitOverride)),
 });
 

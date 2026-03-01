@@ -60,10 +60,13 @@ import { AuditLogger } from '../lib/audit/logger.js';
 import { createApprovalFlow } from '../lib/hitl/approval.js';
 import { BudgetTracker } from '../lib/budget/tracker.js';
 import { ConfigWatcher } from '../lib/config/watcher.js';
+import { DlpScanner } from '../lib/dlp/scanner.js';
+import { DlpMasker } from '../lib/dlp/masker.js';
+import type { DlpAction, DlpMatch, DlpScannerConfig } from '../lib/dlp/scanner.js';
 import type { ApprovalFlow } from '../lib/hitl/approval.js';
 import type { PolicyEngine, ExecutionMode } from '../lib/policy/engine.js';
 import type { ResolvedIdentity } from '../lib/identity/provider.js';
-import type { GovernanceConfig } from '../lib/config/schema.js';
+import type { GovernanceConfig, DlpConfigType } from '../lib/config/schema.js';
 
 // Tools that involve file paths — used for path boundary checks
 const PATH_TOOLS: Record<string, string> = {
@@ -110,6 +113,90 @@ function extractPath(toolName: string, input: Record<string, unknown>): string |
   return typeof val === 'string' ? val : undefined;
 }
 
+// --- DLP helpers ---
+
+const ACTION_PRIORITY: Record<DlpAction, number> = { audit: 0, mask: 1, block: 2 };
+
+function extractDlpFields(toolName: string, input: Record<string, unknown>): Map<string, string> {
+  const fields = new Map<string, string>();
+  switch (toolName) {
+    case 'bash': {
+      const cmd = input['command'];
+      if (typeof cmd === 'string') fields.set('command', cmd);
+      break;
+    }
+    case 'write': {
+      const content = input['content'];
+      if (typeof content === 'string') fields.set('content', content);
+      const path = input['path'];
+      if (typeof path === 'string') fields.set('path', path);
+      break;
+    }
+    case 'edit': {
+      const newStr = input['new_string'];
+      if (typeof newStr === 'string') fields.set('new_string', newStr);
+      const oldStr = input['old_string'];
+      if (typeof oldStr === 'string') fields.set('old_string', oldStr);
+      break;
+    }
+    default: {
+      // Scan all string values
+      for (const [key, val] of Object.entries(input)) {
+        if (typeof val === 'string') fields.set(key, val);
+      }
+    }
+  }
+  return fields;
+}
+
+function resolveHighestAction(
+  scanner: DlpScanner,
+  matches: DlpMatch[],
+  direction: 'input' | 'output',
+): DlpAction {
+  let highest: DlpAction = 'audit';
+  for (const match of matches) {
+    const action = scanner.getPatternAction(match, direction);
+    if (ACTION_PRIORITY[action] > ACTION_PRIORITY[highest]) {
+      highest = action;
+    }
+  }
+  return highest;
+}
+
+function resolveDlpConfig(
+  dlpConfig: DlpConfigType | undefined,
+  role: string,
+): DlpScannerConfig | undefined {
+  if (!dlpConfig?.enabled) return undefined;
+
+  // Apply role overrides
+  const roleOverride = dlpConfig.role_overrides?.[role];
+  if (roleOverride?.enabled === false) return undefined;
+
+  const patternOverrides = new Map<string, DlpAction>();
+
+  return {
+    enabled: true,
+    mode: roleOverride?.mode ?? dlpConfig.mode ?? 'audit',
+    on_input: roleOverride?.on_input ?? dlpConfig.on_input,
+    on_output: roleOverride?.on_output ?? dlpConfig.on_output,
+    severity_threshold: dlpConfig.severity_threshold ?? 'low',
+    built_in: {
+      secrets: dlpConfig.built_in?.secrets ?? true,
+      pii: dlpConfig.built_in?.pii ?? true,
+    },
+    custom_patterns: (dlpConfig.custom_patterns ?? []).map((cp) => ({
+      name: cp.name,
+      pattern: cp.pattern,
+      severity: cp.severity,
+      action: cp.action as DlpAction | undefined,
+    })),
+    allowlist: dlpConfig.allowlist ?? [],
+    pattern_overrides: patternOverrides,
+  };
+}
+
 const piGovernance: ExtensionFactory = (pi) => {
   // State — initialized in session_start
   let config: GovernanceConfig;
@@ -122,8 +209,19 @@ const piGovernance: ExtensionFactory = (pi) => {
   let sessionId: string;
   let budgetTracker: BudgetTracker;
   let configWatcher: ConfigWatcher | undefined;
+  let dlpScanner: DlpScanner | undefined;
+  let dlpMasker: DlpMasker | undefined;
 
-  const stats = { allowed: 0, denied: 0, approvals: 0, dryRun: 0, budgetExceeded: 0 };
+  const stats = {
+    allowed: 0,
+    denied: 0,
+    approvals: 0,
+    dryRun: 0,
+    budgetExceeded: 0,
+    dlpBlocked: 0,
+    dlpDetected: 0,
+    dlpMasked: 0,
+  };
 
   pi.on('session_start', async (_event, ctx) => {
     sessionId = ctx.sessionId;
@@ -171,7 +269,14 @@ const piGovernance: ExtensionFactory = (pi) => {
     const budget = policyEngine.getTokenBudget(identity.role);
     budgetTracker = new BudgetTracker(budget);
 
-    // 9. Start config watcher (if loaded from a file)
+    // 9. Initialize DLP scanner/masker if enabled
+    const dlpCfg = resolveDlpConfig(config.dlp, identity.role);
+    if (dlpCfg) {
+      dlpScanner = new DlpScanner(dlpCfg);
+      dlpMasker = new DlpMasker(config.dlp?.masking);
+    }
+
+    // 10. Start config watcher
     if (loaded.source !== 'built-in') {
       configWatcher = new ConfigWatcher(
         loaded.source,
@@ -181,6 +286,15 @@ const piGovernance: ExtensionFactory = (pi) => {
           policyEngine = new YamlPolicyEngine(newRulesFile);
           const newOverrides = policyEngine.getBashOverrides(identity.role);
           bashClassifier = new BashClassifier(newOverrides);
+          // Recreate DLP scanner/masker on config reload
+          const newDlpCfg = resolveDlpConfig(newConfig.dlp, identity.role);
+          if (newDlpCfg) {
+            dlpScanner = new DlpScanner(newDlpCfg);
+            dlpMasker = new DlpMasker(newConfig.dlp?.masking);
+          } else {
+            dlpScanner = undefined;
+            dlpMasker = undefined;
+          }
           audit.log({
             sessionId,
             event: 'config_reloaded',
@@ -354,7 +468,71 @@ const piGovernance: ExtensionFactory = (pi) => {
       }
     }
 
-    // 6. HITL approval for non-bash tools if required
+    // 6. DLP scan inputs
+    if (dlpScanner && dlpMasker) {
+      const fields = extractDlpFields(toolName, input);
+      const allMatches: DlpMatch[] = [];
+      for (const [, fieldValue] of fields) {
+        const result = dlpScanner.scan(fieldValue);
+        allMatches.push(...result.matches);
+      }
+
+      if (allMatches.length > 0) {
+        const action = resolveHighestAction(dlpScanner, allMatches, 'input');
+        const patternNames = [...new Set(allMatches.map((m) => m.patternName))];
+        const severities = [...new Set(allMatches.map((m) => m.severity))];
+        const dlpMeta = {
+          patterns: patternNames,
+          severities,
+          direction: 'input' as const,
+          count: allMatches.length,
+        };
+
+        if (action === 'block') {
+          stats.dlpBlocked++;
+          await audit.log({
+            ...baseRecord,
+            event: 'dlp_blocked',
+            decision: 'denied',
+            reason: `DLP: ${patternNames.join(', ')} detected in input`,
+            metadata: dlpMeta,
+          });
+          return {
+            block: true,
+            reason: `DLP blocked: sensitive data detected (${patternNames.join(', ')})`,
+          };
+        }
+
+        if (action === 'mask') {
+          stats.dlpMasked++;
+          // Mask each field independently to maintain correct positions
+          for (const [fieldKey, fieldValue] of fields) {
+            const fieldResult = dlpScanner.scan(fieldValue);
+            if (fieldResult.hasMatches) {
+              (input as Record<string, unknown>)[fieldKey] = dlpMasker.maskText(
+                fieldValue,
+                fieldResult.matches,
+              );
+            }
+          }
+          await audit.log({
+            ...baseRecord,
+            event: 'dlp_masked',
+            metadata: { ...dlpMeta, strategy: dlpMasker['config'].strategy },
+          });
+        } else {
+          // audit-only
+          stats.dlpDetected++;
+          await audit.log({
+            ...baseRecord,
+            event: 'dlp_detected',
+            metadata: dlpMeta,
+          });
+        }
+      }
+    }
+
+    // 7. HITL approval for non-bash tools if required
     if (toolName !== 'bash' && policyEngine.requiresApproval(identity.role, toolName)) {
       if (approvalFlow) {
         stats.approvals++;
@@ -380,13 +558,55 @@ const piGovernance: ExtensionFactory = (pi) => {
       }
     }
 
-    // 7. Tool allowed
+    // 8. Tool allowed
     stats.allowed++;
     await audit.log({ ...baseRecord, event: 'tool_allowed', decision: 'allowed' });
     return undefined;
   });
 
   pi.on('tool_result', async (event, _ctx) => {
+    // DLP scan output before audit
+    if (dlpScanner && dlpMasker && event.output) {
+      const result = dlpScanner.scan(event.output);
+      if (result.hasMatches) {
+        const action = resolveHighestAction(dlpScanner, result.matches, 'output');
+        const patternNames = [...new Set(result.matches.map((m) => m.patternName))];
+        const severities = [...new Set(result.matches.map((m) => m.severity))];
+        const dlpMeta = {
+          patterns: patternNames,
+          severities,
+          direction: 'output' as const,
+          count: result.matches.length,
+        };
+
+        if (action === 'mask' || action === 'block') {
+          // block degrades to mask for outputs (handler returns void)
+          stats.dlpMasked++;
+          event.output = dlpMasker.maskText(event.output, result.matches);
+          await audit.log({
+            sessionId,
+            event: 'dlp_masked',
+            userId: identity.userId,
+            role: identity.role,
+            orgUnit: identity.orgUnit,
+            tool: event.toolName,
+            metadata: { ...dlpMeta, strategy: dlpMasker['config'].strategy },
+          });
+        } else {
+          stats.dlpDetected++;
+          await audit.log({
+            sessionId,
+            event: 'dlp_detected',
+            userId: identity.userId,
+            role: identity.role,
+            orgUnit: identity.orgUnit,
+            tool: event.toolName,
+            metadata: dlpMeta,
+          });
+        }
+      }
+    }
+
     await audit.log({
       sessionId,
       event: 'tool_result',
@@ -439,6 +659,9 @@ const piGovernance: ExtensionFactory = (pi) => {
           `  Approvals: ${stats.approvals}`,
           `  Dry-run blocks: ${stats.dryRun}`,
           `  Budget exceeded: ${stats.budgetExceeded}`,
+          `  DLP blocked: ${stats.dlpBlocked}`,
+          `  DLP detected: ${stats.dlpDetected}`,
+          `  DLP masked: ${stats.dlpMasked}`,
           '',
           'Audit Events:',
           ...[...summary.entries()].map(([k, v]) => `  ${k}: ${v}`),

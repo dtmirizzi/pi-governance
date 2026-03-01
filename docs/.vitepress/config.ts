@@ -50,6 +50,7 @@ export default defineConfig({
           items: [
             { text: 'Human-in-the-Loop', link: '/guide/hitl' },
             { text: 'Audit Logging', link: '/guide/audit' },
+            { text: 'Data Loss Prevention', link: '/guide/dlp' },
             { text: 'OpenClaw', link: '/guide/openclaw' },
           ],
         },
@@ -61,6 +62,7 @@ export default defineConfig({
             { text: 'Configuration', link: '/reference/config' },
             { text: 'API', link: '/reference/api' },
             { text: 'Bash Patterns', link: '/reference/bash-patterns' },
+            { text: 'DLP Patterns', link: '/reference/dlp-patterns' },
             { text: 'Audit Schema', link: '/reference/audit-schema' },
           ],
         },

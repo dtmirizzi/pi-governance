@@ -28,6 +28,25 @@ export { OsoMemoryFactStore } from './lib/facts/oso-memory-store.js';
 export { type BashClassification, BashClassifier } from './lib/bash/classifier.js';
 export { SAFE_PATTERNS, DANGEROUS_PATTERNS } from './lib/bash/patterns.js';
 
+// DLP (Data Loss Prevention)
+export {
+  DlpScanner,
+  DlpMasker,
+  SECRET_PATTERNS as DLP_SECRET_PATTERNS,
+  PII_PATTERNS as DLP_PII_PATTERNS,
+  compareSeverity,
+  type DlpAction,
+  type DlpMatch,
+  type DlpScanResult,
+  type DlpScannerConfig,
+  type DlpCustomPattern,
+  type DlpAllowlistEntry,
+  type DlpPatternDef,
+  type DlpSeverity,
+  type DlpCategory,
+  type MaskingConfig,
+} from './lib/dlp/index.js';
+
 // Budget
 export { BudgetTracker } from './lib/budget/tracker.js';
 

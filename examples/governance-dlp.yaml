@@ -1,0 +1,71 @@
+# governance-dlp.yaml — Example DLP configuration for pi-governance
+#
+# DLP (Data Loss Prevention) detects and handles sensitive data
+# in tool call inputs and outputs — API keys, tokens, PII.
+
+auth:
+  provider: env
+
+policy:
+  engine: yaml
+  yaml:
+    rules_file: ./governance-rules.yaml
+
+hitl:
+  default_mode: supervised
+  approval_channel: cli
+  timeout_seconds: 300
+
+audit:
+  sinks:
+    - type: jsonl
+      path: ~/.pi/agent/audit.jsonl
+
+# --- DLP Configuration ---
+
+dlp:
+  enabled: true
+
+  # Global default action: audit | mask | block
+  mode: mask
+
+  # Directional overrides (optional)
+  on_input: block # Block tool calls with secrets in input
+  on_output: mask # Mask secrets in tool result output
+
+  # Masking strategy
+  masking:
+    strategy: partial # partial | full | hash
+    show_chars: 4 # Show last N chars (partial only)
+    placeholder: '***' # Replacement text (partial and full)
+
+  # Minimum severity to act on: low | medium | high | critical
+  severity_threshold: low
+
+  # Built-in pattern categories
+  built_in:
+    secrets: true # AWS keys, GitHub PATs, JWTs, etc.
+    pii: true # SSN, credit cards, email, phone, IP
+
+  # Custom patterns for organization-specific secrets
+  custom_patterns:
+    - name: internal_api_key
+      pattern: 'grwnd_[a-zA-Z0-9]{32}'
+      severity: critical
+      action: block # Per-pattern action override
+
+  # Allowlist — exclude known false positives
+  allowlist:
+    - pattern: 'EXAMPLE_KEY_.*'
+    - pattern: '127\.0\.0\.1'
+    - pattern: 'test@example\.com'
+
+  # Per-role DLP overrides
+  role_overrides:
+    admin:
+      enabled: false # Admin bypasses DLP
+    analyst:
+      mode: block # Analyst gets strict blocking
+    project_lead:
+      on_input: mask # Project lead gets masking on inputs
+      on_output: mask # and outputs
