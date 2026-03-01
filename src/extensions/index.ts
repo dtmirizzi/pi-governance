@@ -52,6 +52,7 @@ type ExtensionFactory = (pi: ExtensionAPI) => void;
 
 // --- Implementation ---
 
+import { existsSync } from 'node:fs';
 import { loadConfig } from '../lib/config/loader.js';
 import { createIdentityChain } from '../lib/identity/chain.js';
 import { YamlPolicyEngine } from '../lib/policy/yaml-engine.js';
@@ -236,7 +237,46 @@ const piGovernance: ExtensionFactory = (pi) => {
 
     // 3. Create policy engine
     const rulesFile = config.policy?.yaml?.rules_file ?? './governance-rules.yaml';
-    policyEngine = new YamlPolicyEngine(rulesFile);
+    if (existsSync(rulesFile)) {
+      policyEngine = new YamlPolicyEngine(rulesFile);
+    } else {
+      // No rules file found — use permissive defaults so the extension doesn't crash
+      policyEngine = new YamlPolicyEngine({
+        roles: {
+          admin: {
+            allowed_tools: ['all'],
+            blocked_tools: [],
+            prompt_template: 'admin',
+            execution_mode: 'autonomous',
+            human_approval: { required_for: [] },
+            token_budget_daily: -1,
+            allowed_paths: ['**'],
+            blocked_paths: [],
+          },
+          project_lead: {
+            allowed_tools: ['all'],
+            blocked_tools: [],
+            prompt_template: 'project-lead',
+            execution_mode: 'supervised',
+            human_approval: { required_for: ['bash', 'write'] },
+            token_budget_daily: -1,
+            allowed_paths: ['**'],
+            blocked_paths: [],
+          },
+          analyst: {
+            allowed_tools: ['read', 'grep', 'find', 'ls'],
+            blocked_tools: ['write', 'edit', 'bash'],
+            prompt_template: 'analyst',
+            execution_mode: 'supervised',
+            human_approval: { required_for: ['all'] },
+            token_budget_daily: -1,
+            allowed_paths: ['**'],
+            blocked_paths: [],
+          },
+        },
+      });
+      ctx.ui.notify(`Rules file not found: ${rulesFile} — using built-in defaults`, 'warning');
+    }
 
     // 4. Get execution mode
     executionMode = policyEngine.getExecutionMode(identity.role);
@@ -283,7 +323,9 @@ const piGovernance: ExtensionFactory = (pi) => {
         (newConfig) => {
           config = newConfig;
           const newRulesFile = newConfig.policy?.yaml?.rules_file ?? './governance-rules.yaml';
-          policyEngine = new YamlPolicyEngine(newRulesFile);
+          if (existsSync(newRulesFile)) {
+            policyEngine = new YamlPolicyEngine(newRulesFile);
+          }
           const newOverrides = policyEngine.getBashOverrides(identity.role);
           bashClassifier = new BashClassifier(newOverrides);
           // Recreate DLP scanner/masker on config reload

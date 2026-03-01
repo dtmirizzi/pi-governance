@@ -1,0 +1,7 @@
+{
+  "name": "lodash-isequal-shim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Drop-in replacement for deprecated lodash.isequal using node:util.isDeepStrictEqual",
+  "main": "./index.cjs"
+}

@@ -105,6 +105,11 @@
       "prettier --write"
     ]
   },
+  "pnpm": {
+    "overrides": {
+      "lodash.isequal": "file:packages/lodash-isequal-shim"
+    }
+  },
   "packageManager": "pnpm@10.30.3",
   "engines": {
     "node": ">=20"
