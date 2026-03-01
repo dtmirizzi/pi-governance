@@ -1,3 +1,13 @@
+# [1.4.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.3.0...v1.4.0) (2026-03-01)
+
+### Bug Fixes
+
+- **ci:** include workspace root in recursive build and typecheck ([90983f0](https://github.com/Grwnd-AI/pi-governance/commit/90983f0cfa079e9dabbf97f8cb5bfa9fd3085ed0))
+
+### Features
+
+- add @grwnd/openclaw-governance identity bridge plugin ([6c68a20](https://github.com/Grwnd-AI/pi-governance/commit/6c68a200da1ee8343ee685a41755e6b4cad1db80))
+
 # [1.3.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.2.0...v1.3.0) (2026-03-01)
 
 ### Bug Fixes
