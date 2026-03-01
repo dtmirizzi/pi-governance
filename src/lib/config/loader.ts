@@ -4,14 +4,16 @@ import { Value } from '@sinclair/typebox/value';
 import { GovernanceConfigSchema, type GovernanceConfig } from './schema.js';
 import { DEFAULTS } from './defaults.js';
 
-const CONFIG_PATHS = [
-  process.env.GRWND_GOVERNANCE_CONFIG,
-  '.pi/governance.yaml',
-  `${process.env.HOME}/.pi/agent/governance.yaml`,
-];
+function getConfigPaths(): (string | undefined)[] {
+  return [
+    process.env['GRWND_GOVERNANCE_CONFIG'],
+    '.pi/governance.yaml',
+    `${process.env['HOME']}/.pi/agent/governance.yaml`,
+  ];
+}
 
 export function loadConfig(): { config: GovernanceConfig; source: string } {
-  for (const path of CONFIG_PATHS) {
+  for (const path of getConfigPaths()) {
     if (path && existsSync(path)) {
       const raw = readFileSync(path, 'utf-8');
       const parsed = parseYaml(raw);

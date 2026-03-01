@@ -23,7 +23,7 @@ resource AgentSession {
 
 has_permission(user: User, "invoke", tool: Tool) if
   user.role = "analyst" and
-  tool.name in ["read"];
+  tool.name in ["read", "grep", "find", "ls"];
 
 has_permission(user: User, "read", path: FilePath) if
   user.role = "analyst" and
@@ -36,11 +36,11 @@ has_permission(user: User, "run_supervised", _session: AgentSession) if
 
 has_permission(user: User, "invoke", tool: Tool) if
   user.role = "project_lead" and
-  tool.name in ["read", "write", "edit", "bash"];
+  tool.name in ["read", "write", "edit", "bash", "grep", "find", "ls"];
 
 has_permission(user: User, "auto_approve", tool: Tool) if
   user.role = "project_lead" and
-  tool.name in ["read", "edit"];
+  tool.name in ["read", "edit", "grep", "find", "ls"];
 
 has_permission(user: User, "read", path: FilePath) if
   user.role = "project_lead" and
@@ -74,7 +74,7 @@ has_permission(user: User, "run_autonomous", _session: AgentSession) if
 
 has_permission(user: User, "invoke", tool: Tool) if
   user.role = "auditor" and
-  tool.name = "read";
+  tool.name in ["read", "grep", "find", "ls"];
 
 has_permission(user: User, "read", _path: FilePath) if
   user.role = "auditor";

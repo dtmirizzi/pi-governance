@@ -85,6 +85,25 @@ describe('YamlPolicyEngine', () => {
       expect(engine.evaluateTool('auditor', 'edit')).toBe('deny');
       expect(engine.evaluateTool('auditor', 'bash')).toBe('deny');
     });
+
+    // New tool tests (grep, find, ls)
+    it('analyst: allows grep, find, ls (read-equivalent tools)', () => {
+      expect(engine.evaluateTool('analyst', 'grep')).toBe('allow');
+      expect(engine.evaluateTool('analyst', 'find')).toBe('allow');
+      expect(engine.evaluateTool('analyst', 'ls')).toBe('allow');
+    });
+
+    it('project_lead: allows grep, find, ls', () => {
+      expect(engine.evaluateTool('project_lead', 'grep')).toBe('allow');
+      expect(engine.evaluateTool('project_lead', 'find')).toBe('allow');
+      expect(engine.evaluateTool('project_lead', 'ls')).toBe('allow');
+    });
+
+    it('auditor: allows grep, find, ls (read-equivalent tools)', () => {
+      expect(engine.evaluateTool('auditor', 'grep')).toBe('allow');
+      expect(engine.evaluateTool('auditor', 'find')).toBe('allow');
+      expect(engine.evaluateTool('auditor', 'ls')).toBe('allow');
+    });
   });
 
   // ── evaluatePath ──────────────────────────────────────────────
@@ -160,6 +179,12 @@ describe('YamlPolicyEngine', () => {
     it('project_lead: auto-approves read and edit', () => {
       expect(engine.requiresApproval('project_lead', 'read')).toBe(false);
       expect(engine.requiresApproval('project_lead', 'edit')).toBe(false);
+    });
+
+    it('project_lead: auto-approves grep, find, ls', () => {
+      expect(engine.requiresApproval('project_lead', 'grep')).toBe(false);
+      expect(engine.requiresApproval('project_lead', 'find')).toBe(false);
+      expect(engine.requiresApproval('project_lead', 'ls')).toBe(false);
     });
 
     it('project_lead: does not require approval for unlisted tool', () => {

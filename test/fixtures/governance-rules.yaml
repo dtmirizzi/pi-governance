@@ -2,7 +2,7 @@
 
 roles:
   analyst:
-    allowed_tools: [read]
+    allowed_tools: [read, grep, find, ls]
     blocked_tools: [write, edit, bash]
     prompt_template: analyst
     execution_mode: supervised
@@ -16,13 +16,13 @@ roles:
       - '**/.env*'
 
   project_lead:
-    allowed_tools: [read, write, edit, bash]
+    allowed_tools: [read, write, edit, bash, grep, find, ls]
     blocked_tools: []
     prompt_template: project-lead
     execution_mode: supervised
     human_approval:
       required_for: [bash, write]
-      auto_approve: [read, edit]
+      auto_approve: [read, edit, grep, find, ls]
     token_budget_daily: 500000
     allowed_paths:
       - '{{project_path}}/**'
@@ -47,7 +47,7 @@ roles:
     blocked_paths: []
 
   auditor:
-    allowed_tools: [read]
+    allowed_tools: [read, grep, find, ls]
     blocked_tools: [write, edit, bash]
     prompt_template: analyst
     execution_mode: dry_run

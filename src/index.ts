@@ -34,3 +34,19 @@ export { render as renderTemplate } from './lib/templates/renderer.js';
 
 // Audit
 export { type AuditSink } from './lib/audit/sinks/sink.js';
+export { type AuditRecord, type AuditEventType } from './lib/audit/schema.js';
+export { AuditLogger } from './lib/audit/logger.js';
+export { JsonlAuditSink } from './lib/audit/sinks/jsonl.js';
+export { WebhookAuditSink } from './lib/audit/sinks/webhook.js';
+
+// HITL
+export {
+  type ApprovalFlow,
+  type ApprovalResult,
+  type GovernanceToolCall,
+  type ConfirmUI,
+  type HitlConfig,
+  createApprovalFlow,
+} from './lib/hitl/approval.js';
+export { CliApprover } from './lib/hitl/cli-approver.js';
+export { WebhookApprover } from './lib/hitl/webhook-approver.js';

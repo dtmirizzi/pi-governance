@@ -7,7 +7,7 @@
 # Project leads can auto-approve read and edit but need approval for bash/write
 has_permission(user: User, "auto_approve", tool: Tool) if
   user.role = "project_lead" and
-  tool.name in ["read", "edit"];
+  tool.name in ["read", "edit", "grep", "find", "ls"];
 
 # Analyst cannot auto-approve anything — all invocations require approval
 # (no auto_approve rule for analyst role)
