@@ -1,0 +1,17 @@
+src/
+test/
+.github/
+.husky/
+spec/
+docs/
+coverage/
+*.config.ts
+*.config.mjs
+tsconfig.json
+.editorconfig
+.prettierrc
+.prettierignore
+.eslintrc*
+eslint.config.*
+.gitignore
+PLAN.md
