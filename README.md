@@ -10,7 +10,8 @@
 
 <p align="center">
   <a href="https://github.com/Grwnd-AI/pi-governance/actions/workflows/ci.yml"><img src="https://github.com/Grwnd-AI/pi-governance/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://www.npmjs.com/package/@grwnd/pi-governance"><img src="https://img.shields.io/npm/v/@grwnd/pi-governance" alt="npm" /></a>
+  <a href="https://www.npmjs.com/package/@grwnd/pi-governance"><img src="https://img.shields.io/npm/v/@grwnd/pi-governance" alt="npm pi-governance" /></a>
+  <a href="https://www.npmjs.com/package/@grwnd/openclaw-governance"><img src="https://img.shields.io/npm/v/@grwnd/openclaw-governance?label=openclaw-governance" alt="npm openclaw-governance" /></a>
   <a href="https://github.com/Grwnd-AI/pi-governance/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
   <a href="https://grwnd-ai.github.io/pi-governance/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Docs" /></a>
 </p>
@@ -190,12 +191,40 @@ pi-governance works with [OpenClaw](https://github.com/Grwnd-AI) out of the box.
 
 ```
 OpenClaw gateway (WhatsApp, Discord, Telegram, …)
-  └─ Pi embedded runner
-      └─ @grwnd/pi-governance extension
-          ├─ RBAC for MCP tools (create_report, upload_asset, …)
-          ├─ bash command classification
-          ├─ audit logging (JSONL + webhook)
-          └─ HITL approval flow
+  └─ [optional] @grwnd/openclaw-governance plugin → channel identity
+      └─ Pi embedded runner
+          └─ @grwnd/pi-governance extension
+              ├─ RBAC for MCP tools (create_report, upload_asset, …)
+              ├─ bash command classification
+              ├─ audit logging (JSONL + webhook)
+              └─ HITL approval flow
+```
+
+### Get up and running
+
+```bash
+# 1. Install the Pi governance extension
+pi install npm:@grwnd/pi-governance
+
+# 2. Install the OpenClaw identity bridge plugin
+openclaw plugins install @grwnd/openclaw-governance
+```
+
+Create `openclaw-users.yaml` to map channel users to governance roles:
+
+```yaml
+users:
+  whatsapp:+15550123:
+    role: report_author
+    org_unit: field-ops
+  discord:428374928374:
+    role: analyst
+  slack:U04ABCD1234:
+    role: project_lead
+    org_unit: engineering
+default:
+  role: analyst
+  org_unit: default
 ```
 
 Put MCP tool names directly in your policy rules:
@@ -220,7 +249,7 @@ roles:
     token_budget_daily: 500
 ```
 
-Every MCP tool call is audited as structured JSON — see who did what, when, and whether it was approved or denied.
+When a WhatsApp user messages your OpenClaw agent, the identity bridge parses the session key, maps them to a role, and pi-governance enforces the policy — all automatically. Every MCP tool call is audited as structured JSON.
 
 See the full [OpenClaw integration guide](https://grwnd-ai.github.io/pi-governance/guide/openclaw) for MCP tool reference tables, channel identity mapping, and common patterns.
 
@@ -230,6 +259,7 @@ Full documentation at **[grwnd-ai.github.io/pi-governance](https://grwnd-ai.gith
 
 - [Quick Start](https://grwnd-ai.github.io/pi-governance/guide/quickstart)
 - [Team Deployment](https://grwnd-ai.github.io/pi-governance/guide/team-deployment)
+- [OpenClaw Integration](https://grwnd-ai.github.io/pi-governance/guide/openclaw)
 - [YAML Policies](https://grwnd-ai.github.io/pi-governance/guide/yaml-policies)
 - [Bash Classifier](https://grwnd-ai.github.io/pi-governance/guide/bash-classifier)
 - [Configuration Reference](https://grwnd-ai.github.io/pi-governance/reference/config)

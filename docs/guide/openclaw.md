@@ -389,7 +389,49 @@ Every tool call is logged as `tool_dry_run` and blocked. Review the audit trail 
 
 ## Channel identity bridge
 
-When OpenClaw routes messages from WhatsApp, Discord, Slack, or Telegram, the session key carries the channel user identity (e.g. `agent:<id>:whatsapp:dm:+15550123`). The `@grwnd/openclaw-governance` plugin parses that key, looks up the user in a YAML mapping file, and sets the `GRWND_USER`, `GRWND_ROLE`, and `GRWND_ORG_UNIT` environment variables before pi-governance reads them.
+The `@grwnd/openclaw-governance` plugin ([npm](https://www.npmjs.com/package/@grwnd/openclaw-governance)) bridges OpenClaw channel identity to pi-governance RBAC. When a WhatsApp, Discord, Slack, or Telegram user messages your OpenClaw agent, the plugin automatically parses the session key, looks up the user in a YAML mapping file, and sets the governance env vars — so each channel user gets the correct role without any manual configuration.
+
+### Up and running in 3 steps
+
+**Step 1** — Install both packages:
+
+```bash
+pi install npm:@grwnd/pi-governance
+openclaw plugins install @grwnd/openclaw-governance
+```
+
+**Step 2** — Create `openclaw-users.yaml` to map channel users to roles:
+
+```yaml
+users:
+  whatsapp:+15550123:
+    role: report_author
+    org_unit: field-ops
+  discord:428374928374:
+    role: analyst
+  slack:U04ABCD1234:
+    role: project_lead
+    org_unit: engineering
+
+default:
+  role: analyst
+  org_unit: default
+```
+
+**Step 3** — Create your governance rules (`governance-rules.yaml`) with roles that match the ones in your users file. See the [quick start](/guide/quickstart) for the full config walkthrough.
+
+That's it. When a WhatsApp user sends a message, you'll see in the audit log:
+
+```json
+{
+  "event": "session_start",
+  "userId": "whatsapp:+15550123",
+  "role": "report_author",
+  "orgUnit": "field-ops"
+}
+```
+
+### How it works
 
 ```
 OpenClaw session_start
@@ -454,3 +496,20 @@ In your OpenClaw config, point to the users file:
 | Group  | `agent:<agentId>:<channel>:group:<groupId>:<peerId>` |
 
 The plugin ignores keys it cannot parse (e.g. `agent:<id>:main` for direct operator access), leaving the env vars unset so pi-governance falls through to its next identity provider.
+
+### Programmatic API
+
+The plugin exports its internals for custom integrations:
+
+```typescript
+import { parseSessionKey, loadUsers, lookupUser } from '@grwnd/openclaw-governance';
+
+// Parse a session key
+const parsed = parseSessionKey('agent:abc:whatsapp:dm:+15550123');
+// { agentId: 'abc', channel: 'whatsapp', chatType: 'dm', peerId: '+15550123' }
+
+// Load and look up users
+const config = loadUsers('./openclaw-users.yaml');
+const user = lookupUser(config, 'whatsapp', '+15550123');
+// { role: 'report_author', org_unit: 'field-ops' }
+```
