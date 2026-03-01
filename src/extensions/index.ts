@@ -275,7 +275,10 @@ const piGovernance: ExtensionFactory = (pi) => {
           },
         },
       });
-      ctx.ui.notify(`Rules file not found: ${rulesFile} — using built-in defaults`, 'warning');
+      // Only warn if the user explicitly configured a rules file path
+      if (config.policy?.yaml?.rules_file) {
+        ctx.ui.notify(`Rules file not found: ${rulesFile} — using built-in defaults`, 'warning');
+      }
     }
 
     // 4. Get execution mode

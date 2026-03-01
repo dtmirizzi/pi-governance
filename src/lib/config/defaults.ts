@@ -28,6 +28,19 @@ export const DEFAULTS: GovernanceConfig = {
     sinks: [{ type: 'jsonl', path: '~/.pi/agent/audit.jsonl' }],
   },
   dlp: {
-    enabled: false,
+    enabled: true,
+    mode: 'audit',
+    on_input: 'block',
+    on_output: 'mask',
+    masking: {
+      strategy: 'partial',
+      show_chars: 4,
+      placeholder: '***',
+    },
+    severity_threshold: 'low',
+    built_in: {
+      secrets: true,
+      pii: true,
+    },
   },
 };
