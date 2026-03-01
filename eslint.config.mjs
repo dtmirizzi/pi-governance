@@ -2,7 +2,15 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/', '**/dist/', 'node_modules/', 'coverage/', 'docs/.vitepress/', '*.config.*', 'packages/lodash-isequal-shim/**'],
+    ignores: [
+      'dist/',
+      '**/dist/',
+      'node_modules/',
+      'coverage/',
+      'docs/.vitepress/',
+      '*.config.*',
+      'packages/lodash-isequal-shim/**',
+    ],
   },
   ...tseslint.configs.recommended,
   {
