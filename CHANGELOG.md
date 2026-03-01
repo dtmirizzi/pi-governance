@@ -1,3 +1,9 @@
+# [1.6.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.5.1...v1.6.0) (2026-03-01)
+
+### Features
+
+- enable DLP by default and suppress noisy rules-file warning ([3a1b035](https://github.com/Grwnd-AI/pi-governance/commit/3a1b035249de14a159537cb8c738e50d98bc7b68))
+
 ## [1.5.1](https://github.com/Grwnd-AI/pi-governance/compare/v1.5.0...v1.5.1) (2026-03-01)
 
 ### Bug Fixes
