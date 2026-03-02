@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/Grwnd-AI/pi-governance/compare/v2.0.0...v3.0.0) (2026-03-02)
+
+### Features
+
+- rename PI*RBAC* env vars to PI*GOV* prefix ([aebf414](https://github.com/Grwnd-AI/pi-governance/commit/aebf41446c01f22345efad2b8096223ae5767262))
+
+### BREAKING CHANGES
+
+- Environment variables renamed from PI*RBAC* to PI*GOV* prefix.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+
 # [2.0.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.9.1...v2.0.0) (2026-03-02)
 
 ### Features
