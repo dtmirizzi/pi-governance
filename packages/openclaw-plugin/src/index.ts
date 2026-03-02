@@ -52,3 +52,6 @@ export const plugin = {
     });
   },
 };
+
+// Top-level named export expected by OpenClaw plugin loader
+export const register = plugin.register.bind(plugin);
