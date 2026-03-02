@@ -126,10 +126,10 @@ describe('Governance Integration Flow', () => {
 
     // Save env
     originalEnv = {
-      GRWND_USER: process.env['GRWND_USER'],
-      GRWND_ROLE: process.env['GRWND_ROLE'],
-      GRWND_ORG_UNIT: process.env['GRWND_ORG_UNIT'],
-      GRWND_GOVERNANCE_CONFIG: process.env['GRWND_GOVERNANCE_CONFIG'],
+      PI_RBAC_USER: process.env['PI_RBAC_USER'],
+      PI_RBAC_ROLE: process.env['PI_RBAC_ROLE'],
+      PI_RBAC_ORG_UNIT: process.env['PI_RBAC_ORG_UNIT'],
+      PI_RBAC_GOVERNANCE_CONFIG: process.env['PI_RBAC_GOVERNANCE_CONFIG'],
     };
   });
 
@@ -147,9 +147,9 @@ describe('Governance Integration Flow', () => {
   });
 
   function setupEnv(role: string, user = 'test-user', orgUnit = 'default') {
-    process.env['GRWND_USER'] = user;
-    process.env['GRWND_ROLE'] = role;
-    process.env['GRWND_ORG_UNIT'] = orgUnit;
+    process.env['PI_RBAC_USER'] = user;
+    process.env['PI_RBAC_ROLE'] = role;
+    process.env['PI_RBAC_ORG_UNIT'] = orgUnit;
     // Point to the fixture rules file — no YAML config file, so loadConfig falls
     // back to defaults. But defaults point to ./governance-rules.yaml which doesn't
     // exist in cwd. We need to write a governance.yaml that references our fixture.
@@ -171,7 +171,7 @@ describe('Governance Integration Flow', () => {
       `      path: "${join(tmpDir, 'audit.jsonl')}"`,
     ].join('\n');
     writeFileSync(configPath, configContent);
-    process.env['GRWND_GOVERNANCE_CONFIG'] = configPath;
+    process.env['PI_RBAC_GOVERNANCE_CONFIG'] = configPath;
   }
 
   async function startSession(
@@ -363,11 +363,11 @@ describe('Governance Integration Flow', () => {
 
   // --- Test 12: Config not found uses defaults ---
   it('config not found uses defaults — session starts successfully', async () => {
-    // Don't set GRWND_GOVERNANCE_CONFIG — let it fall through
-    delete process.env['GRWND_GOVERNANCE_CONFIG'];
-    process.env['GRWND_USER'] = 'test-user';
-    process.env['GRWND_ROLE'] = 'admin';
-    process.env['GRWND_ORG_UNIT'] = 'default';
+    // Don't set PI_RBAC_GOVERNANCE_CONFIG — let it fall through
+    delete process.env['PI_RBAC_GOVERNANCE_CONFIG'];
+    process.env['PI_RBAC_USER'] = 'test-user';
+    process.env['PI_RBAC_ROLE'] = 'admin';
+    process.env['PI_RBAC_ORG_UNIT'] = 'default';
 
     const api = createMockAPI();
     piGovernance(api as unknown as Parameters<typeof piGovernance>[0]);
@@ -426,9 +426,9 @@ describe('Governance Integration Flow', () => {
   // --- DLP Integration Tests ---
 
   function setupEnvWithDlp(role: string, dlpYaml: string, user = 'test-user', orgUnit = 'default') {
-    process.env['GRWND_USER'] = user;
-    process.env['GRWND_ROLE'] = role;
-    process.env['GRWND_ORG_UNIT'] = orgUnit;
+    process.env['PI_RBAC_USER'] = user;
+    process.env['PI_RBAC_ROLE'] = role;
+    process.env['PI_RBAC_ORG_UNIT'] = orgUnit;
     const configPath = join(tmpDir, 'governance-dlp.yaml');
     const configContent = [
       'auth:',
@@ -448,7 +448,7 @@ describe('Governance Integration Flow', () => {
       dlpYaml,
     ].join('\n');
     writeFileSync(configPath, configContent);
-    process.env['GRWND_GOVERNANCE_CONFIG'] = configPath;
+    process.env['PI_RBAC_GOVERNANCE_CONFIG'] = configPath;
   }
 
   async function startDlpSession(
@@ -660,7 +660,7 @@ describe('Governance Integration Flow', () => {
     expect(result1?.block).toBeUndefined();
 
     // Hot-reload: update config to enable DLP with block
-    const configPath = process.env['GRWND_GOVERNANCE_CONFIG']!;
+    const configPath = process.env['PI_RBAC_GOVERNANCE_CONFIG']!;
     const newConfig = readFileSync(configPath, 'utf-8').replace(
       'dlp:\n  enabled: false',
       'dlp:\n  enabled: true\n  mode: block',
@@ -711,10 +711,10 @@ describe('Governance Integration Flow', () => {
     ].join('\n');
     writeFileSync(configPath, configContent);
 
-    process.env['GRWND_USER'] = 'test-user';
-    process.env['GRWND_ROLE'] = 'admin';
-    process.env['GRWND_ORG_UNIT'] = 'default';
-    process.env['GRWND_GOVERNANCE_CONFIG'] = configPath;
+    process.env['PI_RBAC_USER'] = 'test-user';
+    process.env['PI_RBAC_ROLE'] = 'admin';
+    process.env['PI_RBAC_ORG_UNIT'] = 'default';
+    process.env['PI_RBAC_GOVERNANCE_CONFIG'] = configPath;
 
     // Mock fetch for webhook
     const originalFetch = globalThis.fetch;

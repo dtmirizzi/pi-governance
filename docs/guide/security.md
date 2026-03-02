@@ -66,18 +66,18 @@ This provides defense-in-depth — even if an agent bypasses the tool-call pipel
 
 pi-governance reads sensitive configuration from environment variables:
 
-| Variable                  | Purpose               |
-| ------------------------- | --------------------- |
-| `GRWND_ROLE`              | Agent role assignment |
-| `GRWND_USER_ID`           | User identity         |
-| `GRWND_ORG_UNIT`          | Organization unit     |
-| `GRWND_GOVERNANCE_CONFIG` | Custom config path    |
+| Variable                    | Purpose               |
+| --------------------------- | --------------------- |
+| `PI_RBAC_ROLE`              | Agent role assignment |
+| `PI_RBAC_USER`              | User identity         |
+| `PI_RBAC_ORG_UNIT`          | Organization unit     |
+| `PI_RBAC_GOVERNANCE_CONFIG` | Custom config path    |
 
 ### Recommendations
 
 - **Do not export secrets into the agent's environment.** Use a secrets manager or inject at process startup only.
-- **Set `GRWND_ROLE` in the process launcher**, not in `.bashrc` or `.zshrc` where the agent could modify it.
-- **Use `GRWND_GOVERNANCE_CONFIG`** to point to a read-only config location outside the working directory.
+- **Set `PI_RBAC_ROLE` in the process launcher**, not in `.bashrc` or `.zshrc` where the agent could modify it.
+- **Use `PI_RBAC_GOVERNANCE_CONFIG`** to point to a read-only config location outside the working directory.
 - The bash classifier blocks `export` commands containing `KEY`, `TOKEN`, `SECRET`, `PASSWORD`, or `CREDENTIAL`.
 
 ## Threat Model
@@ -105,7 +105,7 @@ pi-governance reads sensitive configuration from environment variables:
 ## Best Practices Checklist
 
 - [ ] Set governance config files to read-only (`chmod 444`)
-- [ ] Set `GRWND_ROLE` in the process launcher, not in shell config
+- [ ] Set `PI_RBAC_ROLE` in the process launcher, not in shell config
 - [ ] Use `blocked_paths` to restrict access to sensitive directories
 - [ ] Enable audit logging with a persistent sink (JSONL + webhook)
 - [ ] Set `execution_mode: supervised` for untrusted agents

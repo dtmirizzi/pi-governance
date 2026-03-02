@@ -43,9 +43,9 @@ roles:
 ```
 
 ```bash
-export GRWND_USER=$(whoami)
-export GRWND_ROLE=developer
-export GRWND_ORG_UNIT=default
+export PI_RBAC_USER=$(whoami)
+export PI_RBAC_ROLE=developer
+export PI_RBAC_ORG_UNIT=default
 pi
 ```
 
@@ -125,7 +125,7 @@ roles:
 ```
 
 ```bash
-export GRWND_ROLE=auditor
+export PI_RBAC_ROLE=auditor
 pi
 ```
 
@@ -156,7 +156,7 @@ roles:
 ```
 
 ```bash
-export GRWND_ROLE=researcher
+export PI_RBAC_ROLE=researcher
 pi
 ```
 

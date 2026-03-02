@@ -6,7 +6,7 @@ Full reference for `governance.yaml`.
 
 Files are checked in order (first match wins):
 
-1. `$GRWND_GOVERNANCE_CONFIG` environment variable
+1. `$PI_RBAC_GOVERNANCE_CONFIG` environment variable
 2. `.pi/governance.yaml` in the current working directory
 3. `~/.pi/agent/governance.yaml`
 4. Built-in defaults
@@ -19,9 +19,9 @@ When loaded from a file, pi-governance watches for changes and automatically rel
 auth:
   provider: env | local | oidc # Identity provider
   env:
-    user_var: GRWND_USER # Env var for username (default)
-    role_var: GRWND_ROLE # Env var for role (default)
-    org_unit_var: GRWND_ORG_UNIT # Env var for org unit (default)
+    user_var: PI_RBAC_USER # Env var for username (default)
+    role_var: PI_RBAC_ROLE # Env var for role (default)
+    org_unit_var: PI_RBAC_ORG_UNIT # Env var for org unit (default)
   local:
     users_file: ./users.yaml # Path to local users YAML
 
@@ -94,13 +94,13 @@ org_units: # Per-org-unit overrides (optional)
 
 ### auth
 
-| Field              | Type     | Default          | Description              |
-| ------------------ | -------- | ---------------- | ------------------------ |
-| `provider`         | `string` | `env`            | Identity provider type   |
-| `env.user_var`     | `string` | `GRWND_USER`     | Env var for user ID      |
-| `env.role_var`     | `string` | `GRWND_ROLE`     | Env var for role         |
-| `env.org_unit_var` | `string` | `GRWND_ORG_UNIT` | Env var for org unit     |
-| `local.users_file` | `string` | `./users.yaml`   | Path to local users file |
+| Field              | Type     | Default            | Description              |
+| ------------------ | -------- | ------------------ | ------------------------ |
+| `provider`         | `string` | `env`              | Identity provider type   |
+| `env.user_var`     | `string` | `PI_RBAC_USER`     | Env var for user ID      |
+| `env.role_var`     | `string` | `PI_RBAC_ROLE`     | Env var for role         |
+| `env.org_unit_var` | `string` | `PI_RBAC_ORG_UNIT` | Env var for org unit     |
+| `local.users_file` | `string` | `./users.yaml`     | Path to local users file |
 
 ### policy
 

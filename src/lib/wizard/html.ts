@@ -831,15 +831,15 @@ export const WIZARD_HTML: string = `<!DOCTYPE html>
           <div class="field-row-3">
             <div class="field">
               <label>User Var</label>
-              <input type="text" id="auth-user-var" value="GRWND_USER" onchange="updatePreview()">
+              <input type="text" id="auth-user-var" value="PI_RBAC_USER" onchange="updatePreview()">
             </div>
             <div class="field">
               <label>Role Var</label>
-              <input type="text" id="auth-role-var" value="GRWND_ROLE" onchange="updatePreview()">
+              <input type="text" id="auth-role-var" value="PI_RBAC_ROLE" onchange="updatePreview()">
             </div>
             <div class="field">
               <label>Org Unit Var</label>
-              <input type="text" id="auth-org-unit-var" value="GRWND_ORG_UNIT" onchange="updatePreview()">
+              <input type="text" id="auth-org-unit-var" value="PI_RBAC_ORG_UNIT" onchange="updatePreview()">
             </div>
           </div>
         </div>
@@ -1289,9 +1289,9 @@ function buildGovernanceConfig() {
   cfg.auth = { provider: authProvider };
   if (authProvider === 'env') {
     cfg.auth.env = {
-      user_var: document.getElementById('auth-user-var').value || 'GRWND_USER',
-      role_var: document.getElementById('auth-role-var').value || 'GRWND_ROLE',
-      org_unit_var: document.getElementById('auth-org-unit-var').value || 'GRWND_ORG_UNIT'
+      user_var: document.getElementById('auth-user-var').value || 'PI_RBAC_USER',
+      role_var: document.getElementById('auth-role-var').value || 'PI_RBAC_ROLE',
+      org_unit_var: document.getElementById('auth-org-unit-var').value || 'PI_RBAC_ORG_UNIT'
     };
   } else if (authProvider === 'local') {
     cfg.auth.local = {

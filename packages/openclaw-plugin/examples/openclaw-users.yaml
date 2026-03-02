@@ -5,7 +5,7 @@
 #   - peerId:  the channel-specific user identifier
 #
 # Each entry maps to a governance role and optional org_unit.
-# These values are written to GRWND_USER, GRWND_ROLE, and GRWND_ORG_UNIT
+# These values are written to PI_RBAC_USER, PI_RBAC_ROLE, and PI_RBAC_ORG_UNIT
 # environment variables before pi-governance reads them.
 
 users:

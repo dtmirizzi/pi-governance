@@ -6,7 +6,7 @@ import { DEFAULTS } from './defaults.js';
 
 function getConfigPaths(): (string | undefined)[] {
   return [
-    process.env['GRWND_GOVERNANCE_CONFIG'],
+    process.env['PI_RBAC_GOVERNANCE_CONFIG'],
     '.pi/governance.yaml',
     `${process.env['HOME']}/.pi/agent/governance.yaml`,
   ];

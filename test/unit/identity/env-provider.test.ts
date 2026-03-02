@@ -6,13 +6,13 @@ describe('EnvIdentityProvider', () => {
 
   beforeEach(() => {
     // Save current env values
-    savedEnv.GRWND_USER = process.env.GRWND_USER;
-    savedEnv.GRWND_ROLE = process.env.GRWND_ROLE;
-    savedEnv.GRWND_ORG_UNIT = process.env.GRWND_ORG_UNIT;
+    savedEnv.PI_RBAC_USER = process.env.PI_RBAC_USER;
+    savedEnv.PI_RBAC_ROLE = process.env.PI_RBAC_ROLE;
+    savedEnv.PI_RBAC_ORG_UNIT = process.env.PI_RBAC_ORG_UNIT;
     // Clear them
-    delete process.env.GRWND_USER;
-    delete process.env.GRWND_ROLE;
-    delete process.env.GRWND_ORG_UNIT;
+    delete process.env.PI_RBAC_USER;
+    delete process.env.PI_RBAC_ROLE;
+    delete process.env.PI_RBAC_ORG_UNIT;
   });
 
   afterEach(() => {
@@ -27,9 +27,9 @@ describe('EnvIdentityProvider', () => {
   });
 
   it('resolves identity from environment variables', async () => {
-    process.env.GRWND_USER = 'alice';
-    process.env.GRWND_ROLE = 'admin';
-    process.env.GRWND_ORG_UNIT = 'platform';
+    process.env.PI_RBAC_USER = 'alice';
+    process.env.PI_RBAC_ROLE = 'admin';
+    process.env.PI_RBAC_ORG_UNIT = 'platform';
 
     const provider = new EnvIdentityProvider();
     const identity = await provider.resolve();
@@ -42,9 +42,9 @@ describe('EnvIdentityProvider', () => {
     });
   });
 
-  it('defaults orgUnit to "default" when GRWND_ORG_UNIT is not set', async () => {
-    process.env.GRWND_USER = 'bob';
-    process.env.GRWND_ROLE = 'developer';
+  it('defaults orgUnit to "default" when PI_RBAC_ORG_UNIT is not set', async () => {
+    process.env.PI_RBAC_USER = 'bob';
+    process.env.PI_RBAC_ROLE = 'developer';
 
     const provider = new EnvIdentityProvider();
     const identity = await provider.resolve();
@@ -60,8 +60,8 @@ describe('EnvIdentityProvider', () => {
     expect(identity).toBeNull();
   });
 
-  it('returns null when only GRWND_USER is set (partial vars)', async () => {
-    process.env.GRWND_USER = 'alice';
+  it('returns null when only PI_RBAC_USER is set (partial vars)', async () => {
+    process.env.PI_RBAC_USER = 'alice';
 
     const provider = new EnvIdentityProvider();
     const identity = await provider.resolve();

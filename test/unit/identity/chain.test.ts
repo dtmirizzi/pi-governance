@@ -71,19 +71,19 @@ describe('IdentityChain', () => {
 
 describe('createIdentityChain', () => {
   it('creates a chain with default env provider when no config is given', async () => {
-    // With no env vars set for GRWND_USER/GRWND_ROLE, the env provider will return null,
+    // With no env vars set for PI_RBAC_USER/PI_RBAC_ROLE, the env provider will return null,
     // so we should get the fallback identity
-    const savedUser = process.env.GRWND_USER;
-    const savedRole = process.env.GRWND_ROLE;
-    delete process.env.GRWND_USER;
-    delete process.env.GRWND_ROLE;
+    const savedUser = process.env.PI_RBAC_USER;
+    const savedRole = process.env.PI_RBAC_ROLE;
+    delete process.env.PI_RBAC_USER;
+    delete process.env.PI_RBAC_ROLE;
 
     const chain = createIdentityChain();
     const identity = await chain.resolve();
     expect(identity.source).toBe('fallback');
 
     // Restore
-    if (savedUser !== undefined) process.env.GRWND_USER = savedUser;
-    if (savedRole !== undefined) process.env.GRWND_ROLE = savedRole;
+    if (savedUser !== undefined) process.env.PI_RBAC_USER = savedUser;
+    if (savedRole !== undefined) process.env.PI_RBAC_ROLE = savedRole;
   });
 });

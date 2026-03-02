@@ -222,4 +222,4 @@ roles:
     blocked_paths: []
 ```
 
-**What happens:** Every team member gets the same policy. Set `GRWND_ROLE` per developer. All actions are audited to both local files and a central webhook. Config changes are auto-reloaded.
+**What happens:** Every team member gets the same policy. Set `PI_RBAC_ROLE` per developer. All actions are audited to both local files and a central webhook. Config changes are auto-reloaded.

@@ -1,7 +1,7 @@
 # governance.yaml — Main configuration file for @grwnd/pi-governance
 #
 # Place this file at one of the following paths (checked in order):
-#   1. $GRWND_GOVERNANCE_CONFIG (environment variable)
+#   1. $PI_RBAC_GOVERNANCE_CONFIG (environment variable)
 #   2. .pi/governance.yaml (project-local)
 #   3. ~/.pi/agent/governance.yaml (user-global)
 #
@@ -11,9 +11,9 @@
 auth:
   provider: env # Options: env, local, oidc
   env:
-    user_var: GRWND_USER # Env var for user ID
-    role_var: GRWND_ROLE # Env var for role
-    org_unit_var: GRWND_ORG_UNIT # Env var for organizational unit
+    user_var: PI_RBAC_USER # Env var for user ID
+    role_var: PI_RBAC_ROLE # Env var for role
+    org_unit_var: PI_RBAC_ORG_UNIT # Env var for organizational unit
   # Uncomment to use file-based identity instead:
   # provider: local
   # local:

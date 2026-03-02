@@ -72,9 +72,9 @@ audit:
 With environment variables (simplest):
 
 ```bash
-export GRWND_USER=$(whoami)
-export GRWND_ROLE=report_author
-export GRWND_ORG_UNIT=engineering
+export PI_RBAC_USER=$(whoami)
+export PI_RBAC_ROLE=report_author
+export PI_RBAC_ORG_UNIT=engineering
 ```
 
 Or with a local users file for team setups:
@@ -105,7 +105,7 @@ auth:
     users_file: ./users.yaml
 ```
 
-When deploying via OpenClaw channels, set `GRWND_USER` and `GRWND_ROLE` in your OpenClaw deployment config, or map channel user IDs in the users file:
+When deploying via OpenClaw channels, set `PI_RBAC_USER` and `PI_RBAC_ROLE` in your OpenClaw deployment config, or map channel user IDs in the users file:
 
 ```yaml
 # users.yaml — map OpenClaw channel IDs to roles
@@ -447,7 +447,7 @@ OpenClaw session_start
   → @grwnd/openclaw-governance plugin
     → parse sessionKey "agent:<id>:whatsapp:dm:+15550123"
     → lookup "whatsapp:+15550123" in openclaw-users.yaml
-    → write process.env.GRWND_USER, GRWND_ROLE, GRWND_ORG_UNIT
+    → write process.env.PI_RBAC_USER, PI_RBAC_ROLE, PI_RBAC_ORG_UNIT
   → @grwnd/pi-governance Pi extension
     → EnvIdentityProvider reads the env vars
     → governance enforced with correct role

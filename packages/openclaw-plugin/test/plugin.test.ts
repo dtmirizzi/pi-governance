@@ -6,7 +6,7 @@ const USERS_FILE = join(import.meta.dirname, 'fixtures', 'test-users.yaml');
 
 describe('openclaw-governance plugin', () => {
   const savedEnv: Record<string, string | undefined> = {};
-  const envKeys = ['GRWND_USER', 'GRWND_ROLE', 'GRWND_ORG_UNIT'] as const;
+  const envKeys = ['PI_RBAC_USER', 'PI_RBAC_ROLE', 'PI_RBAC_ORG_UNIT'] as const;
 
   beforeEach(() => {
     for (const key of envKeys) {
@@ -46,9 +46,9 @@ describe('openclaw-governance plugin', () => {
 
     api.emit('session_start', { sessionKey: 'agent:a1:whatsapp:dm:+15550123' });
 
-    expect(process.env.GRWND_USER).toBe('whatsapp:+15550123');
-    expect(process.env.GRWND_ROLE).toBe('report_author');
-    expect(process.env.GRWND_ORG_UNIT).toBe('field-ops');
+    expect(process.env.PI_RBAC_USER).toBe('whatsapp:+15550123');
+    expect(process.env.PI_RBAC_ROLE).toBe('report_author');
+    expect(process.env.PI_RBAC_ORG_UNIT).toBe('field-ops');
   });
 
   it('uses default role for unknown user', () => {
@@ -57,9 +57,9 @@ describe('openclaw-governance plugin', () => {
 
     api.emit('session_start', { sessionKey: 'agent:a1:whatsapp:dm:+19999999' });
 
-    expect(process.env.GRWND_USER).toBe('whatsapp:+19999999');
-    expect(process.env.GRWND_ROLE).toBe('analyst');
-    expect(process.env.GRWND_ORG_UNIT).toBe('default');
+    expect(process.env.PI_RBAC_USER).toBe('whatsapp:+19999999');
+    expect(process.env.PI_RBAC_ROLE).toBe('analyst');
+    expect(process.env.PI_RBAC_ORG_UNIT).toBe('default');
   });
 
   it('does not set env vars for unparseable session key', () => {
@@ -68,9 +68,9 @@ describe('openclaw-governance plugin', () => {
 
     api.emit('session_start', { sessionKey: 'agent:a1:main' });
 
-    expect(process.env.GRWND_USER).toBeUndefined();
-    expect(process.env.GRWND_ROLE).toBeUndefined();
-    expect(process.env.GRWND_ORG_UNIT).toBeUndefined();
+    expect(process.env.PI_RBAC_USER).toBeUndefined();
+    expect(process.env.PI_RBAC_ROLE).toBeUndefined();
+    expect(process.env.PI_RBAC_ORG_UNIT).toBeUndefined();
   });
 
   it('resolves Discord user correctly', () => {
@@ -79,8 +79,8 @@ describe('openclaw-governance plugin', () => {
 
     api.emit('message_received', { sessionKey: 'agent:b2:discord:dm:428374928374' });
 
-    expect(process.env.GRWND_USER).toBe('discord:428374928374');
-    expect(process.env.GRWND_ROLE).toBe('admin');
-    expect(process.env.GRWND_ORG_UNIT).toBe('platform');
+    expect(process.env.PI_RBAC_USER).toBe('discord:428374928374');
+    expect(process.env.PI_RBAC_ROLE).toBe('admin');
+    expect(process.env.PI_RBAC_ORG_UNIT).toBe('platform');
   });
 });

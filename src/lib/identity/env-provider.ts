@@ -4,9 +4,9 @@ export class EnvIdentityProvider implements IdentityProvider {
   name = 'env';
 
   constructor(
-    private userVar: string = 'GRWND_USER',
-    private roleVar: string = 'GRWND_ROLE',
-    private orgUnitVar: string = 'GRWND_ORG_UNIT',
+    private userVar: string = 'PI_RBAC_USER',
+    private roleVar: string = 'PI_RBAC_ROLE',
+    private orgUnitVar: string = 'PI_RBAC_ORG_UNIT',
   ) {}
 
   async resolve(): Promise<ResolvedIdentity | null> {

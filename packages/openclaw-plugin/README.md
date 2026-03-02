@@ -14,7 +14,7 @@ OpenClaw session_start
   → @grwnd/openclaw-governance plugin
     → parse sessionKey "agent:<id>:whatsapp:dm:+15550123"
     → lookup "whatsapp:+15550123" in openclaw-users.yaml
-    → write process.env.GRWND_USER, GRWND_ROLE, GRWND_ORG_UNIT
+    → write process.env.PI_RBAC_USER, PI_RBAC_ROLE, PI_RBAC_ORG_UNIT
   → @grwnd/pi-governance Pi extension
     → EnvIdentityProvider reads the env vars
     → governance enforced with correct role

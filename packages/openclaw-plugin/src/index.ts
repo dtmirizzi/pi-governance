@@ -22,10 +22,10 @@ function applyIdentity(usersConfig: UsersConfig, sessionKey: string | undefined)
   const user = usersConfig.users[`${parsed.channel}:${parsed.peerId}`] ?? usersConfig.default;
   if (!user) return;
 
-  process.env.GRWND_USER = `${parsed.channel}:${parsed.peerId}`;
-  process.env.GRWND_ROLE = user.role;
+  process.env.PI_RBAC_USER = `${parsed.channel}:${parsed.peerId}`;
+  process.env.PI_RBAC_ROLE = user.role;
   if (user.org_unit) {
-    process.env.GRWND_ORG_UNIT = user.org_unit;
+    process.env.PI_RBAC_ORG_UNIT = user.org_unit;
   }
 }
 

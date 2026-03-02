@@ -52,7 +52,7 @@ graph TD
 
 ```mermaid
 graph LR
-    A[loadConfig] --> B{$GRWND_GOVERNANCE_CONFIG?}
+    A[loadConfig] --> B{$PI_RBAC_GOVERNANCE_CONFIG?}
     B -- exists --> C[Load file]
     B -- no --> D{.pi/governance.yaml?}
     D -- exists --> C
