@@ -1,3 +1,9 @@
+# [1.9.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.8.0...v1.9.0) (2026-03-02)
+
+### Features
+
+- config self-protection, bash tamper detection, and openclaw manifest fix ([7b2801b](https://github.com/Grwnd-AI/pi-governance/commit/7b2801b84b942b25f791b8e0ec56e0d98d107dab))
+
 # [1.8.0](https://github.com/Grwnd-AI/pi-governance/compare/v1.7.0...v1.8.0) (2026-03-01)
 
 ### Features
