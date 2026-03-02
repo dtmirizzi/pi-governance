@@ -38,6 +38,7 @@ pi install npm:@grwnd/pi-governance
 - **Audit** — Every decision logged as structured JSON
 - **HITL** — Human approval for sensitive operations
 - **Budgets** — Per-role tool invocation limits
+- **Config self-protection** — Agents cannot modify their own governance files
 
 ## Customize
 

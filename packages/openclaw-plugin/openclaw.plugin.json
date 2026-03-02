@@ -3,5 +3,15 @@
   "name": "Grwnd OpenClaw Governance",
   "version": "0.1.0",
   "description": "Bridges OpenClaw channel identity to pi-governance RBAC roles",
-  "extensions": ["./dist/index.js"]
+  "extensions": ["./dist/index.js"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "users_file": {
+        "type": "string",
+        "default": "./openclaw-users.yaml",
+        "description": "Path to the YAML file mapping channel identities to governance roles"
+      }
+    }
+  }
 }

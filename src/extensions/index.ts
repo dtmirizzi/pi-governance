@@ -53,6 +53,7 @@ type ExtensionFactory = (pi: ExtensionAPI) => void;
 // --- Implementation ---
 
 import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadConfig } from '../lib/config/loader.js';
 import { createIdentityChain } from '../lib/identity/chain.js';
 import { YamlPolicyEngine } from '../lib/policy/yaml-engine.js';
@@ -212,8 +213,10 @@ const piGovernance: ExtensionFactory = (pi) => {
   let configWatcher: ConfigWatcher | undefined;
   let dlpScanner: DlpScanner | undefined;
   let dlpMasker: DlpMasker | undefined;
+  let protectedPaths: Set<string> = new Set();
 
   const stats = {
+    configTampered: 0,
     allowed: 0,
     denied: 0,
     approvals: 0,
@@ -230,6 +233,18 @@ const piGovernance: ExtensionFactory = (pi) => {
     // 1. Load config
     const loaded = loadConfig();
     config = loaded.config;
+
+    // 1b. Compute protected config paths (hardcoded — cannot be overridden)
+    const paths = new Set<string>();
+    if (loaded.source !== 'built-in') {
+      paths.add(resolve(loaded.source));
+    }
+    const rulesFileCfg = config.policy?.yaml?.rules_file ?? './governance-rules.yaml';
+    paths.add(resolve(rulesFileCfg));
+    // Fallback well-known paths
+    paths.add(resolve(ctx.workingDirectory, '.pi/governance.yaml'));
+    paths.add(resolve(ctx.workingDirectory, 'governance-rules.yaml'));
+    protectedPaths = paths;
 
     // 2. Resolve identity
     const chain = createIdentityChain(config.auth);
@@ -387,6 +402,24 @@ const piGovernance: ExtensionFactory = (pi) => {
       tool: toolName,
       input: params,
     };
+
+    // 0. Hardcoded config self-protection — cannot be bypassed by policy
+    if (WRITE_TOOLS.has(toolName)) {
+      const filePath = extractPath(toolName, input);
+      if (filePath && protectedPaths.has(resolve(filePath))) {
+        stats.configTampered++;
+        await audit.log({
+          ...baseRecord,
+          event: 'config_tampered',
+          decision: 'denied',
+          reason: `Config self-protection: write to governance file blocked (${filePath})`,
+        });
+        return {
+          block: true,
+          reason: `Governance config files are protected and cannot be modified by agents`,
+        };
+      }
+    }
 
     // 1. Dry-run mode — block everything, log as dry_run
     if (executionMode === 'dry_run') {
@@ -704,6 +737,7 @@ const piGovernance: ExtensionFactory = (pi) => {
           `  Approvals: ${stats.approvals}`,
           `  Dry-run blocks: ${stats.dryRun}`,
           `  Budget exceeded: ${stats.budgetExceeded}`,
+          `  Config tampered: ${stats.configTampered}`,
           `  DLP blocked: ${stats.dlpBlocked}`,
           `  DLP detected: ${stats.dlpDetected}`,
           `  DLP masked: ${stats.dlpMasked}`,

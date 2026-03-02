@@ -128,6 +128,20 @@ describe('BashClassifier', () => {
       ['cargo install ripgrep', 'cargo install'],
       ['apt install vim', 'apt install'],
       ['apt-get install vim', 'apt-get install'],
+      // Governance config tampering
+      ['echo "role: admin" > governance.yaml', 'echo redirect to governance.yaml'],
+      ['echo "role: admin" > governance-rules.yaml', 'echo redirect to governance-rules.yaml'],
+      ['cat /tmp/evil.yaml > .pi/governance.yaml', 'cat redirect to .pi/governance.yaml'],
+      ['tee .pi/governance.yaml < /tmp/cfg', 'tee to .pi/governance.yaml'],
+      ['printf "x" > governance.yaml', 'printf redirect to governance.yaml'],
+      ['sed -i "s/analyst/admin/" governance-rules.yaml', 'sed in-place governance-rules.yaml'],
+      ['sed -i "s/old/new/" .pi/governance.yaml', 'sed in-place .pi/governance.yaml'],
+      ['cp /tmp/override.yaml governance-rules.yaml', 'cp to governance-rules.yaml'],
+      ['mv /tmp/bad.yaml governance.yaml', 'mv to governance.yaml'],
+      ['rm governance-rules.yaml', 'rm governance-rules.yaml'],
+      ['cp evil.yaml .pi/governance.yaml', 'cp to .pi/governance.yaml'],
+      ['mv bad.yaml .pi/governance.yaml', 'mv to .pi/governance.yaml'],
+      ['rm .pi/governance.yaml', 'rm .pi/governance.yaml'],
     ];
 
     for (const [cmd, label] of dangerousCases) {

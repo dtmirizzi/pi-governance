@@ -137,4 +137,14 @@ export const DANGEROUS_PATTERNS: RegExp[] = [
   /\bmake\s/,
   /\bgcc\b/,
   /\bg\+\+/,
+
+  // Governance config tampering — shell-based writes to governance files
+  /(cat|echo|printf)\s.*>\s*.*governance(-rules)?\.yaml/,
+  /\btee\s+.*governance(-rules)?\.yaml/,
+  /sed\s+-i.*governance(-rules)?\.yaml/,
+  /(cp|mv|rm)\s.*governance(-rules)?\.yaml/,
+  /(cat|echo|printf)\s.*>\s*.*\.pi\/governance/,
+  /\btee\s+.*\.pi\/governance/,
+  /sed\s+-i.*\.pi\/governance/,
+  /(cp|mv|rm)\s.*\.pi\/governance/,
 ];

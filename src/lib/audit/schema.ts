@@ -14,7 +14,8 @@ export type AuditEventType =
   | 'config_reloaded'
   | 'dlp_blocked'
   | 'dlp_detected'
-  | 'dlp_masked';
+  | 'dlp_masked'
+  | 'config_tampered';
 
 export interface AuditRecord {
   id: string;
