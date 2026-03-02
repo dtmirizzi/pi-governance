@@ -139,7 +139,7 @@ roles:
       - '**/.env*'
       - '**/secrets/**'
 
-  # Can use read/write MCP tools, but not destructive ones
+  # Can research docs and manage PRs, but not delete repos
   project_lead:
     allowed_tools:
       # Built-in Pi tools
@@ -147,25 +147,29 @@ roles:
       - grep
       - find
       - ls
-      # MCP tools — list the exact names from your MCP servers
-      - search_documents
-      - read_file
-      - write_file
-      - query
+      # Context7 MCP tools
+      - resolve-library-id
+      - query-docs
+      # GitHub MCP tools
+      - get_file_contents
+      - create_or_update_file
+      - create_pull_request
+      - list_issues
+      - search_repositories
     blocked_tools:
       - bash
-      - delete_file
-      - drop_table
+      - delete_repository
     prompt_template: project_lead
     execution_mode: supervised
     human_approval:
       required_for:
-        - write_file
-        - execute
+        - create_or_update_file
+        - create_pull_request
       auto_approve:
-        - search_documents
-        - read_file
-        - query
+        - resolve-library-id
+        - query-docs
+        - get_file_contents
+        - list_issues
         - read
     token_budget_daily: 500
     allowed_paths:
@@ -174,25 +178,25 @@ roles:
       - '**/.env*'
       - '**/secrets/**'
 
-  # Read-only — can search and view but not create or modify
+  # Read-only — can search docs and browse repos but not modify
   analyst:
     allowed_tools:
       - read
       - grep
       - find
       - ls
-      - search_documents
-      - read_file
-      - query
-      - list_directory
+      - resolve-library-id
+      - query-docs
+      - get_file_contents
+      - list_issues
+      - search_repositories
     blocked_tools:
       - bash
       - write
       - edit
-      - write_file
-      - delete_file
-      - execute
-      - drop_table
+      - create_or_update_file
+      - create_pull_request
+      - delete_repository
     prompt_template: analyst
     execution_mode: supervised
     human_approval:
@@ -221,39 +225,53 @@ pi mcp list-tools
 # Or check the server's documentation / manifest
 ```
 
-The tool name in your policy must match the MCP tool name exactly — e.g., if the server exposes `search_documents`, use `search_documents` in your rules.
+The tool name in your policy must match the MCP tool name exactly — e.g., if the server exposes `resolve-library-id`, use `resolve-library-id` in your rules.
 
-### Example: filesystem MCP server
+### Context7 MCP server
 
-| Tool             | Operation        | Risk        |
-| ---------------- | ---------------- | ----------- |
-| `read_file`      | Read a file      | Read        |
-| `write_file`     | Write a file     | Write       |
-| `list_directory` | List a directory | Read        |
-| `delete_file`    | Delete a file    | Destructive |
+[Context7](https://github.com/upstash/context7) retrieves up-to-date documentation and code examples for any library.
+
+| Tool                 | Operation                         | Risk |
+| -------------------- | --------------------------------- | ---- |
+| `resolve-library-id` | Resolve a library name to an ID   | Read |
+| `query-docs`         | Query documentation for a library | Read |
 
 ```yaml
-# governance-rules.yaml
+# governance-rules.yaml — allow all analysts to look up docs
 roles:
   analyst:
-    allowed_tools: [read_file, list_directory]
-    blocked_tools: [write_file, delete_file]
+    allowed_tools: [resolve-library-id, query-docs, read, grep]
+    blocked_tools: [bash, write, edit]
 ```
 
-### Example: database MCP server
+### GitHub MCP server
 
-| Tool          | Operation      | Risk        |
-| ------------- | -------------- | ----------- |
-| `query`       | Run a query    | Read        |
-| `execute`     | Run a mutation | Write       |
-| `list_tables` | List tables    | Read        |
-| `drop_table`  | Drop a table   | Destructive |
+[GitHub MCP](https://github.com/github/github-mcp-server) provides repository, issue, and pull request management.
+
+| Tool                    | Operation             | Risk        |
+| ----------------------- | --------------------- | ----------- |
+| `get_file_contents`     | Read a file from repo | Read        |
+| `search_repositories`   | Search GitHub repos   | Read        |
+| `list_issues`           | List repo issues      | Read        |
+| `create_or_update_file` | Write a file to repo  | Write       |
+| `create_pull_request`   | Open a PR             | Write       |
+| `create_issue`          | Create an issue       | Write       |
+| `delete_repository`     | Delete an entire repo | Destructive |
 
 ```yaml
 roles:
-  analyst:
-    allowed_tools: [query, list_tables]
-    blocked_tools: [execute, drop_table]
+  project_lead:
+    allowed_tools:
+      - get_file_contents
+      - search_repositories
+      - list_issues
+      - create_or_update_file
+      - create_pull_request
+    blocked_tools:
+      - delete_repository
+    human_approval:
+      required_for: [create_pull_request, create_or_update_file]
+      auto_approve: [get_file_contents, list_issues, search_repositories]
 ```
 
 ### Mixing MCP tools with built-in tools
@@ -262,22 +280,24 @@ MCP tool names and built-in Pi tool names (`bash`, `read`, `write`, `edit`, `gre
 
 ```yaml
 roles:
-  report_author:
+  project_lead:
     allowed_tools:
       # Built-in Pi tools
       - read
       - grep
       - find
       - ls
-      # MCP tools from your connected servers
-      - search_documents
-      - get_report
-      - create_report
+      # Context7 — doc research
+      - resolve-library-id
+      - query-docs
+      # GitHub — repo management
+      - get_file_contents
+      - create_pull_request
     blocked_tools:
       - bash
       - write
       - edit
-      - drop_table
+      - delete_repository
 ```
 
 ## Audit
@@ -287,11 +307,11 @@ Every MCP tool call is logged as structured JSON. This gives you a complete reco
 ### Example audit output
 
 ```json
-{"timestamp":"2026-03-01T10:00:01Z","sessionId":"abc-123","event":"tool_allowed","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"search_documents","input":{}}
-{"timestamp":"2026-03-01T10:00:02Z","sessionId":"abc-123","event":"tool_allowed","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"read_file","input":{}}
-{"timestamp":"2026-03-01T10:00:05Z","sessionId":"abc-123","event":"approval_requested","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"write_file","input":{}}
-{"timestamp":"2026-03-01T10:00:08Z","sessionId":"abc-123","event":"approval_granted","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"write_file","input":{},"duration":3000}
-{"timestamp":"2026-03-01T10:00:12Z","sessionId":"abc-123","event":"tool_denied","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"drop_table","decision":"denied","reason":"Policy denies project_lead from using drop_table"}
+{"timestamp":"2026-03-01T10:00:01Z","sessionId":"abc-123","event":"tool_allowed","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"resolve-library-id","input":{}}
+{"timestamp":"2026-03-01T10:00:02Z","sessionId":"abc-123","event":"tool_allowed","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"query-docs","input":{}}
+{"timestamp":"2026-03-01T10:00:05Z","sessionId":"abc-123","event":"approval_requested","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"create_pull_request","input":{}}
+{"timestamp":"2026-03-01T10:00:08Z","sessionId":"abc-123","event":"approval_granted","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"create_pull_request","input":{},"duration":3000}
+{"timestamp":"2026-03-01T10:00:12Z","sessionId":"abc-123","event":"tool_denied","userId":"alice","role":"project_lead","orgUnit":"engineering","tool":"delete_repository","decision":"denied","reason":"Policy denies project_lead from using delete_repository"}
 ```
 
 ### Ship audit to a central endpoint
@@ -311,8 +331,8 @@ audit:
 ### Query audit logs
 
 ```bash
-# What write operations happened today?
-cat ~/.pi/agent/audit.jsonl | jq 'select(.tool == "write_file")'
+# What PRs did the agent create?
+cat ~/.pi/agent/audit.jsonl | jq 'select(.tool == "create_pull_request")'
 
 # All denied operations
 cat ~/.pi/agent/audit.jsonl | jq 'select(.decision == "denied")'
@@ -325,35 +345,37 @@ cat ~/.pi/agent/audit.jsonl | jq 'select(.event == "session_end") | .metadata.bu
 
 ### Approval before write operations
 
-Require human sign-off before the agent performs writes, but let it search and read freely:
+Require human sign-off before the agent creates PRs or pushes files, but let it research freely:
 
 ```yaml
 human_approval:
   required_for:
-    - write_file
-    - execute
-    - delete_file
+    - create_pull_request
+    - create_or_update_file
+    - create_issue
   auto_approve:
-    - read_file
-    - query
-    - search_documents
-    - list_directory
+    - resolve-library-id
+    - query-docs
+    - get_file_contents
+    - list_issues
+    - search_repositories
 ```
 
 ### Budget-limited research session
 
-Let the agent explore data but cap the session:
+Let the agent look up docs and browse repos but cap the session:
 
 ```yaml
 researcher:
   allowed_tools:
-    - search_documents
-    - read_file
-    - list_directory
-    - query
+    - resolve-library-id
+    - query-docs
+    - get_file_contents
+    - search_repositories
+    - list_issues
     - read
     - grep
-  blocked_tools: [bash, write, edit, write_file, delete_file, execute]
+  blocked_tools: [bash, write, edit, create_or_update_file, create_pull_request, delete_repository]
   execution_mode: supervised
   token_budget_daily: 100
 ```
