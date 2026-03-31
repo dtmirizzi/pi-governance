@@ -53,6 +53,8 @@ export default defineConfig({
             { text: 'Human-in-the-Loop', link: '/guide/hitl' },
             { text: 'Audit Logging', link: '/guide/audit' },
             { text: 'Data Loss Prevention', link: '/guide/dlp' },
+            { text: 'Dependency Guardian', link: '/guide/dependency-guardian' },
+            { text: 'Guardian Roadmap', link: '/guide/dependency-guardian-roadmap' },
             { text: 'Security', link: '/guide/security' },
             { text: 'OpenClaw', link: '/guide/openclaw' },
           ],

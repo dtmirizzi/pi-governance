@@ -162,6 +162,38 @@ const DlpConfig = Type.Object({
 
 export type DlpConfigType = Static<typeof DlpConfig>;
 
+// --- Dependency Guardian ---
+
+const DependencyGuardianChecksConfig = Type.Object({
+  existence: Type.Boolean({ default: true }),
+  reputation: Type.Boolean({ default: true }),
+  typosquatting: Type.Boolean({ default: true }),
+  install_scripts: Type.Boolean({ default: true }),
+  vulnerabilities: Type.Boolean({ default: true }),
+});
+
+const DependencyGuardianConfig = Type.Object({
+  enabled: Type.Boolean({ default: true }),
+  checks: Type.Optional(DependencyGuardianChecksConfig),
+  risk_thresholds: Type.Optional(
+    Type.Object({
+      min_age_days: Type.Number({ default: 30, minimum: 0 }),
+      min_weekly_downloads: Type.Number({ default: 100, minimum: 0 }),
+    }),
+  ),
+  on_risk: Type.Optional(
+    Type.Union([Type.Literal('escalate'), Type.Literal('block'), Type.Literal('audit')], {
+      default: 'escalate',
+    }),
+  ),
+  allowlist: Type.Optional(Type.Array(Type.String())),
+  blocklist: Type.Optional(Type.Array(Type.String())),
+  blocklist_patterns: Type.Optional(Type.Array(Type.String())),
+  custom_registry_bypass: Type.Boolean({ default: true }),
+});
+
+export type DependencyGuardianConfigType = Static<typeof DependencyGuardianConfig>;
+
 export const GovernanceConfigSchema = Type.Object({
   auth: Type.Optional(AuthConfig),
   policy: Type.Optional(PolicyConfig),
@@ -169,6 +201,7 @@ export const GovernanceConfigSchema = Type.Object({
   hitl: Type.Optional(HitlConfig),
   audit: Type.Optional(AuditConfig),
   dlp: Type.Optional(DlpConfig),
+  dependency_guardian: Type.Optional(DependencyGuardianConfig),
   org_units: Type.Optional(Type.Record(Type.String(), OrgUnitOverride)),
 });
 
