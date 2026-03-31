@@ -26,6 +26,8 @@ roles:
     blocked_paths:
       - '**/secrets/**' # No access to secrets
       - '**/.env*' # No access to env files
+    dependency_guardian:
+      on_risk: block # Strictest — block any risky install
 
   # ── Project Lead ─────────────────────────────────────────────────────
   # Full tool access, but bash and write require human approval.
@@ -48,6 +50,8 @@ roles:
         - 'sudo'
         - 'ssh'
         - "curl.*\\|.*sh" # Prevent curl-pipe-to-shell attacks
+    dependency_guardian:
+      on_risk: escalate # Ask for approval on risky installs
 
   # ── Admin ────────────────────────────────────────────────────────────
   # Full autonomous access. No approvals, no budget limit.
@@ -61,6 +65,8 @@ roles:
     token_budget_daily: -1 # Unlimited
     allowed_paths: ['**'] # All paths
     blocked_paths: []
+    dependency_guardian:
+      on_risk: audit # Log only — admin trusts their installs
 
   # ── Auditor ──────────────────────────────────────────────────────────
   # Dry-run mode: all tool calls are logged but none are executed.

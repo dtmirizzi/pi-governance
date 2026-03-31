@@ -24,6 +24,7 @@ Verify:
 | ------------------- | ------------------------------------------------------- |
 | Bash classification | Active — dangerous commands blocked                     |
 | DLP                 | Active — secrets blocked on input, PII masked on output |
+| Dependency Guardian | Disabled — enable to validate package installs          |
 | Role                | `analyst` (read-only) unless `PI_GOV_ROLE` is set       |
 | Audit               | JSONL to `~/.pi/agent/audit.jsonl`                      |
 

@@ -55,6 +55,31 @@ audit:
     # - type: webhook
     #   url: https://audit.example.com/api/v1/events
 
+# ── Dependency Guardian ───────────────────────────────────────────────
+# Validates package-install commands (npm, pip, cargo) against registry
+# metadata, vulnerability databases, and typosquat detection.
+# Disabled by default — enable to protect against slopsquatting attacks.
+#
+# dependency_guardian:
+#   enabled: true
+#   checks:
+#     existence: true       # Verify the package exists on the registry
+#     reputation: true      # Check age, download count, maintainer count
+#     typosquatting: true   # Detect names similar to popular packages
+#     install_scripts: true # Flag packages with install scripts
+#     vulnerabilities: true # Query OSV.dev for known CVEs
+#   risk_thresholds:
+#     min_age_days: 30          # Packages newer than this → medium risk
+#     min_weekly_downloads: 100 # Downloads below this → medium/high risk
+#   on_risk: escalate  # escalate | block | audit
+#   custom_registry_bypass: true  # Skip checks for --registry / --index-url
+#   allowlist:            # Additional trusted packages (merged with defaults)
+#     - my-internal-pkg
+#   blocklist:            # Additional blocked packages (merged with defaults)
+#     - known-bad-pkg
+#   blocklist_patterns:   # Regex patterns for blocklisting
+#     - '^evil-'
+
 # ── Org-Unit Overrides (optional) ─────────────────────────────────────
 # Override HITL or policy settings for specific organizational units.
 # org_units:
