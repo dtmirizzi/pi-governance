@@ -7,7 +7,7 @@
  * Exit 0 = pass, non-zero = fail.
  */
 
-import piGovernance from '@grwnd/pi-governance';
+import piGovernance from '@grwnd/pi-governance/extensions';
 
 // Minimal mock of the Pi ExtensionAPI
 const handlers = {
