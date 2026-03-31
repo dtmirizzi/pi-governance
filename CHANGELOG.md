@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/dtmirizzi/pi-governance/compare/v3.0.0...v3.0.1) (2026-03-31)
+
+### Bug Fixes
+
+- guard against undefined audit on shutdown and migrate repo URLs to dtmirizzi ([2dd0c56](https://github.com/dtmirizzi/pi-governance/commit/2dd0c56a87ecb77298e9bc17a257a3d0169ebda5))
+
 # [3.0.0](https://github.com/Grwnd-AI/pi-governance/compare/v2.0.0...v3.0.0) (2026-03-02)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@grwnd/pi-governance",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Governance, RBAC, audit, and HITL for Pi-based coding agents",
   "keywords": [
     "pi-package",
