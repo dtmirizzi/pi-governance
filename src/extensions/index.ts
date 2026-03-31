@@ -391,6 +391,8 @@ const piGovernance: ExtensionFactory = (pi) => {
   });
 
   pi.on('tool_call', async (event, _ctx) => {
+    if (!audit || !policyEngine || !identity) return undefined;
+
     const { toolName, input } = event;
     const params = summarizeParams(toolName, input);
 
@@ -643,6 +645,8 @@ const piGovernance: ExtensionFactory = (pi) => {
   });
 
   pi.on('tool_result', async (event, _ctx) => {
+    if (!audit || !identity) return;
+
     // DLP scan output before audit
     if (dlpScanner && dlpMasker && event.output) {
       const result = dlpScanner.scan(event.output);
@@ -699,15 +703,18 @@ const piGovernance: ExtensionFactory = (pi) => {
 
   pi.on('session_shutdown', async (_event, _ctx) => {
     configWatcher?.stop();
+    if (!audit) return;
     await audit.log({
       sessionId,
       event: 'session_end',
-      userId: identity.userId,
-      role: identity.role,
-      orgUnit: identity.orgUnit,
+      userId: identity?.userId,
+      role: identity?.role,
+      orgUnit: identity?.orgUnit,
       metadata: {
         stats: { ...stats },
-        budget: { used: budgetTracker.used(), remaining: budgetTracker.remaining() },
+        budget: budgetTracker
+          ? { used: budgetTracker.used(), remaining: budgetTracker.remaining() }
+          : undefined,
         summary: Object.fromEntries(audit.getSummary()),
       },
     });

@@ -123,7 +123,7 @@ When the budget is exhausted, all further tool calls are blocked and a `budget_e
 
 ## Four standard roles
 
-See [examples/governance-rules.yaml](https://github.com/Grwnd-AI/pi-governance/blob/main/examples/governance-rules.yaml) for a complete annotated example with all four standard roles:
+See [examples/governance-rules.yaml](https://github.com/dtmirizzi/pi-governance/blob/main/examples/governance-rules.yaml) for a complete annotated example with all four standard roles:
 
 - **analyst** — read-only, every action approved, conservative budget
 - **project_lead** — full access, bash/write approved, moderate budget

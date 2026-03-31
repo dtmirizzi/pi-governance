@@ -72,11 +72,11 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/Grwnd-AI/pi-governance' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/dtmirizzi/pi-governance' }],
 
     footer: {
       message: 'Released under the Apache-2.0 License.',
-      copyright: 'Copyright 2026 Grwnd AI',
+      copyright: 'Copyright 2026 dtmirizzi',
     },
   },
 });

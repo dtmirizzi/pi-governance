@@ -5,7 +5,7 @@ Thank you for your interest in contributing to pi-governance! This guide covers 
 ## Getting started
 
 ```bash
-git clone https://github.com/Grwnd-AI/pi-governance.git
+git clone https://github.com/dtmirizzi/pi-governance.git
 cd pi-governance
 pnpm install
 ```
