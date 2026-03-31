@@ -7,7 +7,7 @@
  * Exit 0 = pass, non-zero = fail.
  */
 
-import piGovernance from "@grwnd/pi-governance";
+import piGovernance from '@grwnd/pi-governance';
 
 // Minimal mock of the Pi ExtensionAPI
 const handlers = {
@@ -33,7 +33,7 @@ const ctx = {
     notify: () => {},
     setStatus: () => {},
   },
-  sessionId: "smoke-test-1",
+  sessionId: 'smoke-test-1',
   workingDirectory: undefined,
 };
 
@@ -44,7 +44,7 @@ for (const h of handlers.session_start) {
 
 // A basic tool_call must not throw
 for (const h of handlers.tool_call) {
-  await h({ toolName: "read", input: { path: "/tmp/test.ts" } }, ctx);
+  await h({ toolName: 'read', input: { path: '/tmp/test.ts' } }, ctx);
 }
 
 // session_shutdown must not throw
@@ -52,4 +52,4 @@ for (const h of handlers.session_shutdown) {
   await h({}, ctx);
 }
 
-console.log("Docker smoke test passed");
+console.log('Docker smoke test passed');

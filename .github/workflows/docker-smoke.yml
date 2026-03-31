@@ -43,4 +43,4 @@ jobs:
             -v /tmp/pkg:/pkg \
             -v ${{ github.workspace }}/test/smoke:/smoke \
             node:24-slim \
-            sh -c 'set -e && npm install --global /pkg/*.tgz && node /smoke/docker-entrypoint.mjs'
+            sh -c 'set -e && mkdir /app && cd /app && npm init -y > /dev/null 2>&1 && npm install /pkg/*.tgz && cp /smoke/docker-entrypoint.mjs . && node docker-entrypoint.mjs'
