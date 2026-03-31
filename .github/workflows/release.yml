@@ -14,7 +14,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.repository == 'Grwnd-AI/pi-governance'
+    if: github.repository == 'dtmirizzi/pi-governance'
 
     steps:
       - uses: actions/checkout@v4

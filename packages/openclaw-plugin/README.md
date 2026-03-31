@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@grwnd/openclaw-governance)](https://www.npmjs.com/package/@grwnd/openclaw-governance)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE)
 
-OpenClaw identity bridge plugin for [@grwnd/pi-governance](https://github.com/Grwnd-AI/pi-governance).
+OpenClaw identity bridge plugin for [@grwnd/pi-governance](https://github.com/dtmirizzi/pi-governance).
 
 Parses OpenClaw session keys (WhatsApp, Discord, Slack, Telegram) and maps channel users to governance roles — so pi-governance enforces the right RBAC policy per user without any manual env var setup.
 
@@ -78,7 +78,7 @@ If `users_file` is omitted, it defaults to `./openclaw-users.yaml` in the curren
 
 ### 4. Set up governance rules
 
-Create your pi-governance config and rules as normal — see the [pi-governance docs](https://grwnd-ai.github.io/pi-governance/guide/quickstart). The roles you assign in `openclaw-users.yaml` must match roles defined in `governance-rules.yaml`.
+Create your pi-governance config and rules as normal — see the [pi-governance docs](https://dtmirizzi.github.io/pi-governance/guide/quickstart). The roles you assign in `openclaw-users.yaml` must match roles defined in `governance-rules.yaml`.
 
 ### 5. Verify
 

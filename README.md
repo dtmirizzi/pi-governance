@@ -9,11 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Grwnd-AI/pi-governance/actions/workflows/ci.yml"><img src="https://github.com/Grwnd-AI/pi-governance/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/dtmirizzi/pi-governance/actions/workflows/ci.yml"><img src="https://github.com/dtmirizzi/pi-governance/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://www.npmjs.com/package/@grwnd/pi-governance"><img src="https://img.shields.io/npm/v/@grwnd/pi-governance" alt="npm pi-governance" /></a>
   <a href="https://www.npmjs.com/package/@grwnd/openclaw-governance"><img src="https://img.shields.io/npm/v/@grwnd/openclaw-governance?label=openclaw-governance" alt="npm openclaw-governance" /></a>
-  <a href="https://github.com/Grwnd-AI/pi-governance/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
-  <a href="https://grwnd-ai.github.io/pi-governance/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Docs" /></a>
+  <a href="https://github.com/dtmirizzi/pi-governance/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
+  <a href="https://dtmirizzi.github.io/pi-governance/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Docs" /></a>
 </p>
 
 ---
@@ -52,7 +52,7 @@ Opens a browser-based wizard to configure roles, DLP, audit, and HITL. Generates
 
 ### Manual YAML
 
-Create `.pi/governance.yaml` and `governance-rules.yaml` — see the [Configuration Reference](https://grwnd-ai.github.io/pi-governance/reference/config).
+Create `.pi/governance.yaml` and `governance-rules.yaml` — see the [Configuration Reference](https://dtmirizzi.github.io/pi-governance/reference/config).
 
 ### Set identity
 
@@ -64,14 +64,14 @@ pi
 
 ## Documentation
 
-Full docs at **[grwnd-ai.github.io/pi-governance](https://grwnd-ai.github.io/pi-governance/)**.
+Full docs at **[dtmirizzi.github.io/pi-governance](https://dtmirizzi.github.io/pi-governance/)**.
 
-- [Why Governance?](https://grwnd-ai.github.io/pi-governance/guide/why) — What can go wrong without controls
-- [Quick Start](https://grwnd-ai.github.io/pi-governance/guide/quickstart) — Install and configure
-- [Common Scenarios](https://grwnd-ai.github.io/pi-governance/guide/scenarios) — Copy-paste configs
-- [YAML Policies](https://grwnd-ai.github.io/pi-governance/guide/yaml-policies) — Full policy reference
-- [DLP Guide](https://grwnd-ai.github.io/pi-governance/guide/dlp) — Data loss prevention
-- [OpenClaw Integration](https://grwnd-ai.github.io/pi-governance/guide/openclaw) — MCP tool governance
+- [Why Governance?](https://dtmirizzi.github.io/pi-governance/guide/why) — What can go wrong without controls
+- [Quick Start](https://dtmirizzi.github.io/pi-governance/guide/quickstart) — Install and configure
+- [Common Scenarios](https://dtmirizzi.github.io/pi-governance/guide/scenarios) — Copy-paste configs
+- [YAML Policies](https://dtmirizzi.github.io/pi-governance/guide/yaml-policies) — Full policy reference
+- [DLP Guide](https://dtmirizzi.github.io/pi-governance/guide/dlp) — Data loss prevention
+- [OpenClaw Integration](https://dtmirizzi.github.io/pi-governance/guide/openclaw) — MCP tool governance
 
 ## License
 

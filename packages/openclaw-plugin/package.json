@@ -3,10 +3,10 @@
   "version": "3.0.0",
   "description": "OpenClaw identity bridge plugin for @grwnd/pi-governance",
   "license": "Apache-2.0",
-  "author": "Grwnd AI",
+  "author": "dtmirizzi",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Grwnd-AI/pi-governance.git",
+    "url": "https://github.com/dtmirizzi/pi-governance.git",
     "directory": "packages/openclaw-plugin"
   },
   "type": "module",

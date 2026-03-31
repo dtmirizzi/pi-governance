@@ -100,7 +100,7 @@ audit:
       url: ${TEAM_AUDIT_URL}
 ```
 
-Use the [standard four roles](https://github.com/Grwnd-AI/pi-governance/blob/main/examples/governance-rules.yaml) in `governance-rules.yaml`.
+Use the [standard four roles](https://github.com/dtmirizzi/pi-governance/blob/main/examples/governance-rules.yaml) in `governance-rules.yaml`.
 
 **Result:** Alice can do anything. Bob gets approval prompts for bash/write. Carol and Dave can only read.
 
