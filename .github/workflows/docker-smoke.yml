@@ -1,0 +1,46 @@
+name: Docker Smoke Test
+
+# Validates that pi-governance loads cleanly inside a minimal Docker
+# container where ctx.workingDirectory may be undefined.
+# See https://github.com/dtmirizzi/pi-governance/issues/1
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  docker-smoke:
+    name: Smoke test in node:24-slim container
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm -r --include-workspace-root build
+
+      - name: Pack tarball
+        run: pnpm pack --pack-destination /tmp/pkg
+
+      - name: Run smoke test in Docker
+        run: |
+          docker run --rm \
+            -v /tmp/pkg:/pkg \
+            -v ${{ github.workspace }}/test/smoke:/smoke \
+            node:24-slim \
+            sh -c 'set -e && npm install --global /pkg/*.tgz && node /smoke/docker-entrypoint.mjs'
