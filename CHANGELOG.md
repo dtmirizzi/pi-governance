@@ -1,3 +1,9 @@
+# [3.1.0](https://github.com/dtmirizzi/pi-governance/compare/v3.0.2...v3.1.0) (2026-03-31)
+
+### Features
+
+- add Dependency Guardian for slopsquatting and supply-chain protection ([1554dd7](https://github.com/dtmirizzi/pi-governance/commit/1554dd72772d2e0822b3f1040eed37ec98dfe671)), closes [#2](https://github.com/dtmirizzi/pi-governance/issues/2)
+
 ## [3.0.2](https://github.com/dtmirizzi/pi-governance/compare/v3.0.1...v3.0.2) (2026-03-31)
 
 ### Bug Fixes
