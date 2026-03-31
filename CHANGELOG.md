@@ -1,3 +1,11 @@
+## [3.0.2](https://github.com/dtmirizzi/pi-governance/compare/v3.0.1...v3.0.2) (2026-03-31)
+
+### Bug Fixes
+
+- **ci:** add extensions subpath export for Docker smoke test ([c53ccb8](https://github.com/dtmirizzi/pi-governance/commit/c53ccb877a72fe968ea0761c480549ec7fff89d2))
+- **ci:** fix Docker smoke test module resolution and formatting ([8a7e49c](https://github.com/dtmirizzi/pi-governance/commit/8a7e49c6b877ea39d9b8922378dcb90821c0e194))
+- guard against undefined workingDirectory in session_start (issue [#1](https://github.com/dtmirizzi/pi-governance/issues/1)) ([8d65902](https://github.com/dtmirizzi/pi-governance/commit/8d6590253a142a2e84688da22d9e6920293022e8))
+
 ## [3.0.1](https://github.com/dtmirizzi/pi-governance/compare/v3.0.0...v3.0.1) (2026-03-31)
 
 ### Bug Fixes
