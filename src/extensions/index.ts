@@ -68,7 +68,13 @@ import type { DlpAction, DlpMatch, DlpScannerConfig } from '../lib/dlp/scanner.j
 import type { ApprovalFlow } from '../lib/hitl/approval.js';
 import type { PolicyEngine, ExecutionMode } from '../lib/policy/engine.js';
 import type { ResolvedIdentity } from '../lib/identity/provider.js';
-import type { GovernanceConfig, DlpConfigType } from '../lib/config/schema.js';
+import type {
+  GovernanceConfig,
+  DlpConfigType,
+  DependencyGuardianConfigType,
+} from '../lib/config/schema.js';
+import { evaluateInstall, type DependencyGuardianConfig } from '../lib/deps/guardian.js';
+import { parseInstallCommand } from '../lib/deps/parser.js';
 
 // Tools that involve file paths — used for path boundary checks
 const PATH_TOOLS: Record<string, string> = {
@@ -199,6 +205,32 @@ function resolveDlpConfig(
   };
 }
 
+function resolveGuardianConfig(
+  cfg: DependencyGuardianConfigType | undefined,
+): DependencyGuardianConfig | undefined {
+  if (!cfg || cfg.enabled === false) return undefined;
+
+  return {
+    enabled: cfg.enabled ?? true,
+    checks: {
+      existence: cfg.checks?.existence ?? true,
+      reputation: cfg.checks?.reputation ?? true,
+      typosquatting: cfg.checks?.typosquatting ?? true,
+      install_scripts: cfg.checks?.install_scripts ?? true,
+      vulnerabilities: cfg.checks?.vulnerabilities ?? true,
+    },
+    risk_thresholds: {
+      min_age_days: cfg.risk_thresholds?.min_age_days ?? 30,
+      min_weekly_downloads: cfg.risk_thresholds?.min_weekly_downloads ?? 100,
+    },
+    on_risk: cfg.on_risk ?? 'escalate',
+    allowlist: cfg.allowlist ?? [],
+    blocklist: cfg.blocklist ?? [],
+    blocklist_patterns: cfg.blocklist_patterns ?? [],
+    custom_registry_bypass: cfg.custom_registry_bypass ?? true,
+  };
+}
+
 const piGovernance: ExtensionFactory = (pi) => {
   // State — initialized in session_start
   let config: GovernanceConfig;
@@ -213,6 +245,7 @@ const piGovernance: ExtensionFactory = (pi) => {
   let configWatcher: ConfigWatcher | undefined;
   let dlpScanner: DlpScanner | undefined;
   let dlpMasker: DlpMasker | undefined;
+  let guardianConfig: DependencyGuardianConfig | undefined;
   let protectedPaths: Set<string> = new Set();
 
   const stats = {
@@ -335,7 +368,10 @@ const piGovernance: ExtensionFactory = (pi) => {
       dlpMasker = new DlpMasker(config.dlp?.masking);
     }
 
-    // 10. Start config watcher
+    // 10. Initialize Dependency Guardian
+    guardianConfig = resolveGuardianConfig(config.dependency_guardian);
+
+    // 11. Start config watcher
     if (loaded.source !== 'built-in') {
       configWatcher = new ConfigWatcher(
         loaded.source,
@@ -356,6 +392,7 @@ const piGovernance: ExtensionFactory = (pi) => {
             dlpScanner = undefined;
             dlpMasker = undefined;
           }
+          guardianConfig = resolveGuardianConfig(newConfig.dependency_guardian);
           audit.log({
             sessionId,
             event: 'config_reloaded',
@@ -391,7 +428,7 @@ const piGovernance: ExtensionFactory = (pi) => {
     );
   });
 
-  pi.on('tool_call', async (event, _ctx) => {
+  pi.on('tool_call', async (event, ctx) => {
     if (!audit || !policyEngine || !identity) return undefined;
 
     const { toolName, input } = event;
@@ -470,6 +507,57 @@ const piGovernance: ExtensionFactory = (pi) => {
       const classification = bashClassifier.classify(command);
 
       if (classification === 'dangerous') {
+        // Check if this is an install command that the guardian should handle
+        if (guardianConfig && parseInstallCommand(command)) {
+          const guardianResult = await evaluateInstall(command, guardianConfig);
+
+          if (!guardianResult.skipped) {
+            if (guardianResult.overallRecommendation === 'block') {
+              stats.denied++;
+              await audit.log({
+                ...baseRecord,
+                event: 'dep_blocked',
+                decision: 'denied',
+                reason: guardianResult.summary,
+                metadata: guardianResult.auditMetadata,
+              });
+              return { block: true, reason: guardianResult.summary };
+            }
+
+            if (guardianResult.overallRecommendation === 'escalate') {
+              await audit.log({
+                ...baseRecord,
+                event: 'dep_escalated',
+                metadata: guardianResult.auditMetadata,
+              });
+
+              const approved = await ctx.ui.confirm(
+                'Dependency Review Required',
+                guardianResult.summary,
+              );
+
+              if (!approved) {
+                stats.denied++;
+                await audit.log({ ...baseRecord, event: 'dep_rejected' });
+                return { block: true, reason: 'Dependency rejected by reviewer' };
+              }
+
+              stats.approvals++;
+              await audit.log({ ...baseRecord, event: 'dep_approved' });
+            }
+
+            // 'allow' — log and proceed
+            await audit.log({
+              ...baseRecord,
+              event: 'dep_allowed',
+              metadata: guardianResult.auditMetadata,
+            });
+            stats.allowed++;
+            return undefined;
+          }
+          // If skipped (lockfile, custom registry, etc.), fall through to normal handling
+        }
+
         stats.denied++;
         await audit.log({
           ...baseRecord,

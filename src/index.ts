@@ -47,6 +47,27 @@ export {
   type MaskingConfig,
 } from './lib/dlp/index.js';
 
+// Dependency Guardian
+export {
+  evaluateInstall,
+  type DependencyGuardianConfig,
+  type GuardianResult,
+} from './lib/deps/guardian.js';
+export { parseInstallCommand, type ParsedInstall, type ParsedPackage } from './lib/deps/parser.js';
+export {
+  levenshteinDistance,
+  normalizedSimilarity,
+  detectTyposquat,
+} from './lib/deps/levenshtein.js';
+export { fetchRegistryMetadata, type RegistryMetadata } from './lib/deps/registry.js';
+export {
+  queryVulnerabilities,
+  queryVulnerabilitiesBatch,
+  type VulnEntry,
+  type VulnerabilityResult,
+} from './lib/deps/vulnerabilities.js';
+export { type DependencyGuardianConfigType } from './lib/config/schema.js';
+
 // Budget
 export { BudgetTracker } from './lib/budget/tracker.js';
 
