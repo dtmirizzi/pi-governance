@@ -745,4 +745,27 @@ describe('Governance Integration Flow', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  // Smoke test for https://github.com/dtmirizzi/pi-governance/issues/1
+  // In Docker, ctx.workingDirectory can be undefined — session_start must not crash.
+  it('session_start succeeds when ctx.workingDirectory is undefined (Docker env)', async () => {
+    setupEnv('admin');
+
+    const api = createMockAPI();
+    piGovernance(api as unknown as Parameters<typeof piGovernance>[0]);
+
+    // Simulate Docker-like context where workingDirectory is missing
+    const ctx = createMockContext({
+      workingDirectory: undefined as unknown as string,
+    });
+
+    // Should not throw "The paths[0] argument must be of type string"
+    await emitSessionStart(api, ctx);
+
+    // Extension initialized — tool calls and shutdown should also work
+    const result = await emitToolCall(api, ctx, 'read', { path: '/tmp/test.ts' });
+    expect(result?.block).toBeUndefined();
+
+    await emitSessionShutdown(api, ctx);
+  });
 });

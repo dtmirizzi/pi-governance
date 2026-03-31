@@ -241,9 +241,10 @@ const piGovernance: ExtensionFactory = (pi) => {
     }
     const rulesFileCfg = config.policy?.yaml?.rules_file ?? './governance-rules.yaml';
     paths.add(resolve(rulesFileCfg));
-    // Fallback well-known paths
-    paths.add(resolve(ctx.workingDirectory, '.pi/governance.yaml'));
-    paths.add(resolve(ctx.workingDirectory, 'governance-rules.yaml'));
+    // Fallback well-known paths — guard against undefined workingDirectory (e.g. Docker)
+    const cwd = ctx.workingDirectory ?? process.cwd();
+    paths.add(resolve(cwd, '.pi/governance.yaml'));
+    paths.add(resolve(cwd, 'governance-rules.yaml'));
     protectedPaths = paths;
 
     // 2. Resolve identity
