@@ -58,4 +58,4 @@ Currently, guardian only intercepts bash install commands. Phase 2 will also int
 
 ## Contributing
 
-If you'd like to help with Phase 2, see [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines. Issues tagged `dependency-guardian` track individual work items.
+If you'd like to help with Phase 2, see [CONTRIBUTING.md](https://github.com/dtmirizzi/pi-governance/blob/main/CONTRIBUTING.md) for guidelines. Issues tagged `dependency-guardian` track individual work items.
