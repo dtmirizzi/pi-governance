@@ -52,11 +52,11 @@ Cargo commands are parsed correctly, but **registry metadata fetching is not yet
 
 Dependency Guardian extracts version specifiers from install commands using ecosystem-specific syntax:
 
-| Ecosystem | Syntax                  | Example                         |
-| --------- | ----------------------- | ------------------------------- |
-| npm       | `pkg@version`           | `npm install lodash@4.17.21`    |
+| Ecosystem | Syntax                                | Example                        |
+| --------- | ------------------------------------- | ------------------------------ |
+| npm       | `pkg@version`                         | `npm install lodash@4.17.21`   |
 | PyPI      | `pkg==version` (and `>=`, `~=`, `!=`) | `pip install requests==2.31.0` |
-| crates.io | `pkg@version`           | `cargo add serde@1.0`           |
+| crates.io | `pkg@version`                         | `cargo add serde@1.0`          |
 
 When a version is specified, it is passed to OSV.dev for version-specific vulnerability matching.
 
@@ -184,20 +184,20 @@ The allowlist also serves as the **corpus for typosquat detection** — package 
 
 ## Risk signals
 
-| Signal                | Severity | Trigger                                            |
-| --------------------- | -------- | -------------------------------------------------- |
-| `package_not_found`   | critical | Package does not exist on the registry             |
-| `on_blocklist`        | critical | Package matches the blocklist                      |
-| `known_vulnerability` | varies   | OSV.dev reports a CVE (severity from CVSS v3 score; defaults to medium when no CVSS data is available) |
-| `very_new_package`    | high     | Created less than 7 days ago                       |
+| Signal                | Severity | Trigger                                                                                                                      |
+| --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `package_not_found`   | critical | Package does not exist on the registry                                                                                       |
+| `on_blocklist`        | critical | Package matches the blocklist                                                                                                |
+| `known_vulnerability` | varies   | OSV.dev reports a CVE (severity from CVSS v3 score; defaults to medium when no CVSS data is available)                       |
+| `very_new_package`    | high     | Created less than 7 days ago                                                                                                 |
 | `typosquat_suspect`   | high     | Name is suspiciously similar to an allowlisted package (see [Typosquat detection algorithm](#typosquat-detection-algorithm)) |
-| `low_downloads`       | high/med | Weekly downloads below threshold (< 10 = high)     |
-| `has_install_scripts` | medium   | Package has preinstall/install/postinstall scripts (npm only; PyPI always reports false) |
-| `new_package`         | medium   | Created less than `min_age_days` ago               |
-| `no_repository`       | low      | No source repository URL in metadata               |
-| `no_readme`           | low      | No README content                                  |
-| `no_license`          | low      | No license declared                                |
-| `single_maintainer`   | info     | Only one maintainer (see [PyPI note](#pypi-limitations)) |
+| `low_downloads`       | high/med | Weekly downloads below threshold (< 10 = high)                                                                               |
+| `has_install_scripts` | medium   | Package has preinstall/install/postinstall scripts (npm only; PyPI always reports false)                                     |
+| `new_package`         | medium   | Created less than `min_age_days` ago                                                                                         |
+| `no_repository`       | low      | No source repository URL in metadata                                                                                         |
+| `no_readme`           | low      | No README content                                                                                                            |
+| `no_license`          | low      | No license declared                                                                                                          |
+| `single_maintainer`   | info     | Only one maintainer (see [PyPI note](#pypi-limitations))                                                                     |
 
 ### Typosquat detection algorithm
 
@@ -209,11 +209,11 @@ Dependency Guardian uses a built-in [Levenshtein distance](https://en.wikipedia.
 
 A package is flagged as `typosquat_suspect` if **any** of these conditions match against an allowlisted package:
 
-| Condition | Example |
-| --------- | ------- |
-| Edit distance = 1 (always flagged) | `expresss` → `express` |
+| Condition                                            | Example                |
+| ---------------------------------------------------- | ---------------------- |
+| Edit distance = 1 (always flagged)                   | `expresss` → `express` |
 | Edit distance = 2 **and** normalized name length ≥ 5 | `requets` → `requests` |
-| Normalized similarity ≥ 0.85 | `loadash` → `lodash` |
+| Normalized similarity ≥ 0.85                         | `loadash` → `lodash`   |
 
 The similarity score is computed as `1 - (distance / max(len(a), len(b)))`.
 
@@ -225,12 +225,12 @@ Typosquat detection is **skipped for allowlisted packages**. If you add a packag
 
 Vulnerability severity is derived from CVSS v3 scores reported by OSV.dev:
 
-| CVSS v3 Score | Mapped Severity |
-| ------------- | --------------- |
-| ≥ 9.0         | critical        |
-| ≥ 7.0         | high            |
-| ≥ 4.0         | medium          |
-| < 4.0         | low             |
+| CVSS v3 Score | Mapped Severity      |
+| ------------- | -------------------- |
+| ≥ 9.0         | critical             |
+| ≥ 7.0         | high                 |
+| ≥ 4.0         | medium               |
+| < 4.0         | low                  |
 | No CVSS data  | **medium** (default) |
 
 When a version is specified in the install command (e.g., `npm install lodash@4.17.20`), the vulnerability query is version-specific — only vulnerabilities affecting that version are returned.
