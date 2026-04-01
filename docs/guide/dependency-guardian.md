@@ -44,6 +44,33 @@ When a bash tool call is classified as dangerous and contains an install command
 | pip     | PyPI      | `pip install`                     |
 | cargo   | crates.io | `cargo add`, `cargo install`      |
 
+::: warning Crates.io limitation
+Cargo commands are parsed correctly, but **registry metadata fetching is not yet implemented** for crates.io. All Rust packages will return a `package_not_found` signal (critical severity) because the registry lookup returns "not found". Vulnerability scanning via OSV.dev still works for crates.io. Full crates.io registry support is planned for Phase 2.
+:::
+
+### Version parsing
+
+Dependency Guardian extracts version specifiers from install commands using ecosystem-specific syntax:
+
+| Ecosystem | Syntax                  | Example                         |
+| --------- | ----------------------- | ------------------------------- |
+| npm       | `pkg@version`           | `npm install lodash@4.17.21`    |
+| PyPI      | `pkg==version` (and `>=`, `~=`, `!=`) | `pip install requests==2.31.0` |
+| crates.io | `pkg@version`           | `cargo add serde@1.0`           |
+
+When a version is specified, it is passed to OSV.dev for version-specific vulnerability matching.
+
+### Scoped packages
+
+npm scoped packages (`@scope/package`) are fully supported. When checking for typosquats, the scope prefix is stripped before comparison — `@myorg/lodash` is compared as `lodash`.
+
+### Command skipping
+
+Certain commands are automatically skipped (no checks performed):
+
+- **No packages specified**: `npm install` or `yarn install` with no package arguments (reinstalls from `package.json`)
+- **File-based pip installs**: `pip install -r requirements.txt`, `pip install ./local-pkg`, `pip install https://...`, `pip install git+https://...` — file paths and URLs are ignored during package extraction
+
 ## Configuration
 
 ### Full example
@@ -130,7 +157,9 @@ Set to `false` to validate packages from private registries too.
 
 ### Allow and blocklists
 
-Built-in allowlists cover ~75 popular npm packages and ~50 popular PyPI packages. Allowlisted packages skip reputation checks but still get vulnerability scanning.
+Built-in allowlists cover ~75 popular npm packages and ~50 popular PyPI packages. User-configured entries are **merged** with the defaults — your additions extend the built-in lists, they don't replace them.
+
+Allowlisted packages skip **both reputation checks and typosquat detection**, but still receive vulnerability scanning and blocklist checks.
 
 ```yaml
 dependency_guardian:
@@ -144,22 +173,72 @@ dependency_guardian:
     - '-keygen$'
 ```
 
+#### Built-in blocklist
+
+In addition to user-configured entries, Dependency Guardian ships with **23 known malicious package names** (historical typosquats and compromised packages) and **9 regex patterns** that match common malware naming conventions:
+
+- **Exact names**: `crossenv`, `gruntcli`, `mongose`, `nodemailer-js`, `shadowsock`, `flatmap-stream`, `colourama`, `numppy`, `djanga`, `urlib3`, and others
+- **Patterns**: names ending in `-free-download`, `-crack`, `-keygen`, `-license-key`, `-hack`, `-serial`, `-activation`, `-premium-free`, `-generator-free`
+
+The allowlist also serves as the **corpus for typosquat detection** — package names are compared against allowlisted names to identify suspiciously similar names.
+
 ## Risk signals
 
 | Signal                | Severity | Trigger                                            |
 | --------------------- | -------- | -------------------------------------------------- |
 | `package_not_found`   | critical | Package does not exist on the registry             |
 | `on_blocklist`        | critical | Package matches the blocklist                      |
-| `known_vulnerability` | varies   | OSV.dev reports a CVE (severity from CVSS score)   |
+| `known_vulnerability` | varies   | OSV.dev reports a CVE (severity from CVSS v3 score; defaults to medium when no CVSS data is available) |
 | `very_new_package`    | high     | Created less than 7 days ago                       |
-| `typosquat_suspect`   | high     | Name is 1-2 edits from a popular package           |
+| `typosquat_suspect`   | high     | Name is suspiciously similar to an allowlisted package (see [Typosquat detection algorithm](#typosquat-detection-algorithm)) |
 | `low_downloads`       | high/med | Weekly downloads below threshold (< 10 = high)     |
-| `has_install_scripts` | medium   | Package has preinstall/install/postinstall scripts |
+| `has_install_scripts` | medium   | Package has preinstall/install/postinstall scripts (npm only; PyPI always reports false) |
 | `new_package`         | medium   | Created less than `min_age_days` ago               |
 | `no_repository`       | low      | No source repository URL in metadata               |
 | `no_readme`           | low      | No README content                                  |
 | `no_license`          | low      | No license declared                                |
-| `single_maintainer`   | info     | Only one maintainer                                |
+| `single_maintainer`   | info     | Only one maintainer (see [PyPI note](#pypi-limitations)) |
+
+### Typosquat detection algorithm
+
+Dependency Guardian uses a built-in [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) implementation (Wagner-Fischer algorithm) to detect typosquats. Before comparison, package names are **normalized**:
+
+1. Scope prefixes are stripped (`@scope/pkg` → `pkg`)
+2. Separators are removed (hyphens `-`, underscores `_`, dots `.`)
+3. Names are lowercased
+
+A package is flagged as `typosquat_suspect` if **any** of these conditions match against an allowlisted package:
+
+| Condition | Example |
+| --------- | ------- |
+| Edit distance = 1 (always flagged) | `expresss` → `express` |
+| Edit distance = 2 **and** normalized name length ≥ 5 | `requets` → `requests` |
+| Normalized similarity ≥ 0.85 | `loadash` → `lodash` |
+
+The similarity score is computed as `1 - (distance / max(len(a), len(b)))`.
+
+::: tip
+Typosquat detection is **skipped for allowlisted packages**. If you add a package to your allowlist, it won't be flagged even if its name resembles another popular package.
+:::
+
+### Vulnerability severity mapping
+
+Vulnerability severity is derived from CVSS v3 scores reported by OSV.dev:
+
+| CVSS v3 Score | Mapped Severity |
+| ------------- | --------------- |
+| ≥ 9.0         | critical        |
+| ≥ 7.0         | high            |
+| ≥ 4.0         | medium          |
+| < 4.0         | low             |
+| No CVSS data  | **medium** (default) |
+
+When a version is specified in the install command (e.g., `npm install lodash@4.17.20`), the vulnerability query is version-specific — only vulnerabilities affecting that version are returned.
+
+### PyPI limitations
+
+- **Maintainer count**: PyPI does not expose maintainer counts. Dependency Guardian approximates this as 0 or 1 based on whether the `author` or `maintainer` field is set. The `single_maintainer` signal may trigger for popular PyPI packages that have a listed author.
+- **Install scripts**: PyPI packages do not have `preinstall`/`postinstall` scripts in the same way as npm. The `has_install_scripts` signal always reports false for PyPI packages.
 
 ## Decision logic
 
@@ -176,6 +255,15 @@ The `on_risk` config then transforms the recommendation:
 - `audit`: escalate → allow (log only)
 
 Blocklisted and non-existent packages are always blocked regardless of `on_risk`.
+
+### Human-in-the-loop (HITL) confirmation
+
+When a package is escalated, the user sees a confirmation dialog titled **"Dependency Review Required"** with a summary that includes:
+
+- The full install command
+- Each flagged package name, ecosystem, and overall risk level
+- All triggered risk signals with severity indicators (`!!` for critical/high, `!` for medium)
+- The user can **approve** or **reject** — the decision is logged as `dep_approved` or `dep_rejected`
 
 ## Role overrides
 
@@ -226,10 +314,26 @@ Lockfile-based installs are automatically skipped (no checks needed):
 
 These commands install exact, pre-resolved versions — no supply-chain risk from name confusion.
 
-## Zero dependencies
+## Configuration live-reload
+
+Changes to the `dependency_guardian` section in `governance.yaml` take effect immediately — no restart required. When the config watcher detects a file change, the guardian config is re-resolved and applied to subsequent install commands.
+
+## Network and performance
 
 Dependency Guardian adds **no new runtime dependencies**. It uses:
 
 - Built-in `fetch()` (Node 22+) for registry and OSV.dev API calls
 - An in-module Levenshtein distance implementation for typosquat detection
-- In-memory LRU caching (200 entries) for registry metadata
+- In-memory FIFO cache (200 entries) for registry metadata
+
+### Request timeouts
+
+All HTTP requests (registry lookups and OSV.dev queries) have a **5-second timeout**. If a request times out:
+
+- **Registry metadata**: The package is treated as "not found" (`package_not_found` signal)
+- **Vulnerability queries**: The package gets an empty vulnerability list (no error surfaced to the user)
+- **Download stats**: Failed download lookups are non-critical — the `low_downloads` signal is simply not emitted
+
+### Batch optimization
+
+When multiple packages are installed in a single command (e.g., `npm install lodash axios chalk`), vulnerability queries are batched into a single request to OSV.dev's `/v1/querybatch` endpoint for efficiency. Single-package installs use the simpler `/v1/query` endpoint.
