@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/dtmirizzi/pi-governance/compare/v3.1.0...v3.1.1) (2026-04-01)
+
+### Bug Fixes
+
+- replace dead relative link to CONTRIBUTING.md with absolute GitHub URL ([e4c53a4](https://github.com/dtmirizzi/pi-governance/commit/e4c53a4b5a1de6509d65e0ebff75a8ddb7fcb20d))
+
 # [3.1.0](https://github.com/dtmirizzi/pi-governance/compare/v3.0.2...v3.1.0) (2026-03-31)
 
 ### Features
